@@ -6,84 +6,89 @@ namespace HOLE
 {
     public enum ItemType { ARMOR, BACKPACKS, CLOTHING, HEADPHONES, HELMETS, RIGS, FIREARMS,
         AMMO, MAGAZINE, GRENADES, FOOD, CONTAINERS, ITEMS, KNIVES, MAPS, MEDICALS, MODS, MONEY }
-    internal static class TarkovCache
+    internal class TarkovCache
     {
         public static Dictionary<string, TarkovItem> Items { get; private set; } = new();
         public static Dictionary<string, TarkovQuest> Quests { get; private set; } = new();
         public static string? Directory { get; private set; }
-        internal static void Initialize(Instance instance)
+        internal TarkovCache(Instance instance)
         {
             Directory = instance.Directory;
             Debug.WriteLine("Initializing " + instance.GlobalLocale);
-            Dictionary<string, string>? itemsLocale = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(instance.GlobalLocale));
-            if(itemsLocale != null) CacheItems(itemsLocale);
-            Dictionary<string, string>? questsLocale = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(instance.ServerLocale));
-            if (questsLocale != null) CacheQuests(questsLocale); 
+            Dictionary<string, string>? locales = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(instance.GlobalLocale));
+            if(locales != null) CacheLocale(locales);
         }
-        private static void CacheItems(Dictionary<string, string> itemsLocale)
+
+        private static void CacheLocale(Dictionary<string, string> locales)
         {
-            foreach(var item in itemsLocale)
+            foreach(var locale in locales)
             {
-                string[] args = item.Key.Split(" ");
+                string[] args = locale.Key.Split(" ");
                 if (args.Length <= 1) continue;
                 string id = args[0];
-                AddToItems(id, args[1], item.Value);
+                string category = args[1];
+                switch(category)
+                {
+                    case "Name":
+                    case "ShortName":
+                    case "Description":
+                        CacheItem(id, category, locale.Value);
+                        break;
+                    case "name":
+                    case "description":
+                    case "failMessageText":
+                    case "successMessageText":
+                    case "acceptPlayerMessage":
+                    case "declinePlayerMessage":
+                    case "completePlayerMessage":
+                        CacheQuest(id, category, locale.Value);
+                        break;
+                }
             }
+            Debug.WriteLine($"Cached: {Items.Count} Items & {Quests.Count} Quests");
         }
-        private static void AddToItems(string id, string category, string entry)
+        private static void CacheItem(string id, string category, string value)
         {
-            TarkovItem item = Items.TryGetValue(id, out TarkovItem value) ? value : new TarkovItem(id);
+            TarkovItem item = Items.TryGetValue(id, out TarkovItem ti) ? ti : new TarkovItem(id);
             switch(category)
             {
                 case "Name":
-                    item.Name = entry;
+                    item.Name = value;
                     break;
                 case "ShortName":
-                    item.ShortName = entry;
+                    item.ShortName = value;
                     break;
                 case "Description":
-                    item.Description = entry;
+                    item.Description = value;
                     break;
             }
-            Debug.WriteLine($"Set {category} to {entry} for ID: {id}");
-            if (!Items.ContainsKey(id)) Debug.WriteLine($"Added Item {item.Name} ({id})");
             Items[id] = item;
         }
-        private static void CacheQuests(Dictionary<string, string> questsLocale)
+        private static void CacheQuest(string id, string category, string value)
         {
-            foreach(var item in questsLocale)
-            {
-                string[] args = item.Key.Split(" ");
-                if (args.Length <= 1) continue;
-                string id = args[0];
-                AddToQuests(id, args[1], item.Value);
-            }
-        }
-        private static void AddToQuests(string id, string category, string entry)
-        {
-            TarkovQuest quest = Quests.TryGetValue(id, out TarkovQuest value) ? value : new TarkovQuest(id);
+            TarkovQuest quest = Quests.TryGetValue(id, out TarkovQuest ti) ? ti : new TarkovQuest(id);
             switch (category)
             {
                 case "name":
-                    quest.name = entry;
+                    quest.name = value;
                     break;
                 case "description":
-                    quest.description = entry;
+                    quest.description = value;
                     break;
                 case "failMessageText":
-                    quest.failMessageText = entry;
+                    quest.failMessageText = value;
                     break;
                 case "successMessageText":
-                    quest.successMessageText = entry;
+                    quest.successMessageText = value;
                     break;
                 case "acceptPlayerMessage":
-                    quest.acceptMessageText = entry;
+                    quest.acceptMessageText = value;
                     break;
                 case "declinePlayerMessage":
-                    quest.declineMessageText = entry;
+                    quest.declineMessageText = value;
                     break;
                 case "completePlayerMessage":
-                    quest.completeMessageText = entry;
+                    quest.completeMessageText = value;
                     break;
             }
             Quests[id] = quest;

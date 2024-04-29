@@ -1,4 +1,4 @@
-﻿namespace HOLE.Scripts
+﻿namespace HOLE.Scripts.Misc
 {
     internal interface ILimitedInt
     {

@@ -1,6 +1,6 @@
-﻿namespace HOLE.Scripts
+﻿namespace HOLE.Scripts.Misc
 {
-    internal struct LauncherSettings()
+    public struct LauncherSettings()
     {
         public string Version { get; set; } = FileUtils.GetProjectVersion();
         public int Lang { get; set; } = 0;
@@ -8,7 +8,7 @@
         public bool AutoLaunch { get; set; } = false;
         public bool AutoStartAki { get; set; } = false;
         public bool AutoKillAki { get; set; } = false;
-        
+
         // Important Stuff
         public string Prefix { get; private set; } = "[H.O.L.E]";
         public string LauncherPath { get; private set; } = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}HerosLauncher";

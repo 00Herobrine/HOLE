@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace HOLE.Scripts
+namespace HOLE.Scripts.Misc
 {
     public static class FileUtils
     {

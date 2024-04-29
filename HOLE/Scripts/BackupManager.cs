@@ -2,7 +2,7 @@
 {
     internal static class BackupManager
     {
-        public static void Backup()
+        public static void Backup(Instance instance, Profile profile)
         {
 
         }

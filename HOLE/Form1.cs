@@ -1,4 +1,5 @@
 using HOLE.Scripts;
+using System.Diagnostics;
 
 namespace HOLE
 {
@@ -9,13 +10,65 @@ namespace HOLE
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void Form1_Load(object sender, EventArgs e)
         {
             Initialize();
+            await DetectAki();
+        }
+
+        public static async Task<bool> IsAkiRunning()
+        {
+            try
+            {
+                await Task.Delay(0);
+                Process[] process = Process.GetProcessesByName("aki.server");
+                return process.Length > 0;
+            } catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return false;
+            }
+        }
+        private async Task DetectAki()
+        {
+            bool isRunning = await IsAkiRunning();
+            if (isRunning)
+            {
+                await Task.Run(() => MessageBox.Show("Active Aki detected", "AKI Detected!"));
+                KillAKIButton.Enabled = true;
+                EnableGameButtons();
+                // Disallow editing server values while live as they won't save
+                DisableServerConfigButtons();
+            } else
+            {
+                DisableGameButtons();
+                KillAKIButton.Enabled = false;
+            }
+        }
+        private void KillAki()
+        {
+
+        }
+        private void EnableGameButtons()
+        {
+            PlayButton.Enabled = true;
+            KillGameButton.Enabled = true;
+        }
+        private void DisableGameButtons()
+        {
+            PlayButton.Enabled = false;
+            KillGameButton.Enabled = false;
+        }
+
+        private void DisableServerConfigButtons()
+        {
+
         }
 
         private void Initialize()
         {
+            KillAKIButton.Enabled = false;
+            DisableGameButtons();
             Settings.Initialize();
             LoadInstances();
             //TarkovCache.Initialize(instance, Settings.Language);
@@ -28,19 +81,14 @@ namespace HOLE
         }
         private void LoadInstances()
         {
-            InstanceManager.Load();
+            InstanceManager.Cache();
             InstanceView.Items.Clear();
             foreach (Instance instance in InstanceManager.Instances.Values)
             {
-                if (TarkovCache.Directory == null) TarkovCache.Initialize(instance);
+                if (TarkovCache.Directory == null) new TarkovCache(instance);
                 DisplayInstance(instance);
             }
             //TarkovCache.Initialize(InstanceManager.Instances.Values.First());
-        }
-        private void LoadInstance(Instance instance)
-        {
-            InstanceManager.Add(instance);
-            DisplayInstance(instance);
         }
         private void DisplayInstance(Instance instance)
         {
@@ -48,8 +96,10 @@ namespace HOLE
         }
         private void InstanceView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (InstanceView.SelectedItems.Count != 1) return;
-            InstanceManager.Get(InstanceView.SelectedItems[0].Text);
+            Instance? selectedInstance = null;
+            if (InstanceView.SelectedItems.Count == 1) selectedInstance = InstanceManager.Get(InstanceView.SelectedItems[0].Text);
+            InstanceManager.SetSelected(selectedInstance);
+            //InstanceManager.Get(InstanceView.SelectedItems[0].Text);
         }
 
         // Update Stuff

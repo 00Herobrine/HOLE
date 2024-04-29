@@ -5,15 +5,16 @@ namespace HOLE.Scripts
     internal static class InstanceManager
     {
         public static string directory => Settings.InstancesPath;
+        public static Instance? SelectedInstance { get; private set; } 
         public static Dictionary<string, Instance> Instances { get; private set; } = new();
 
-        public static void Load()
+        public static void Cache()
         {
             Instances.Clear();
             foreach (string subdir in Directory.GetDirectories(directory)) 
                 Add(subdir);
         }
-        public static Instance Get(string name) => Instances[name];
+        public static Instance? Get(string name) => Instances.TryGetValue(name, out Instance instance) ? instance : null;
         public static void Add(string Path, string? Name = null) => Add(new Instance(Path, Name));
         public static void Add(Instance Instance)
         {
@@ -26,6 +27,11 @@ namespace HOLE.Scripts
         public static void Remove(string name)
         {
             Instances.Remove(name);
+        }
+
+        internal static void SetSelected(Instance? selectedInstance)
+        {
+            SelectedInstance = selectedInstance;
         }
     }
 

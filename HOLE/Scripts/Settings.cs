@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using HOLE.Scripts.Misc;
+using System.Diagnostics;
 
 namespace HOLE.Scripts
 {
@@ -12,8 +13,19 @@ namespace HOLE.Scripts
         public static string DownloadingModsPath { get; private set; } = $"{ModsPath}Downloading{Path.DirectorySeparatorChar}";
         public static string BackupsPath { get; private set; } = $"{LauncherPath}Backups{Path.DirectorySeparatorChar}";
         public static string Language { get; private set; } = "en";
+        public static LauncherSettings LauncherSettings { get; private set; }
         public static Dictionary<string, Locale> Locales { get; private set; } = new();
         public static Instance? SelectedInstance { get; private set; }
+
+        public static void Initialize(LauncherSettings settings)
+        {
+            SetLauncherSettings(settings);
+        }
+
+        private static void SetLauncherSettings(LauncherSettings settings)
+        {
+            LauncherSettings = settings;
+        }
 
         public static void Initialize()
         {

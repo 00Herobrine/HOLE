@@ -3,14 +3,20 @@ using System.ComponentModel;
 
 namespace HOLE.Scripts.Tarkov_Stuff
 {
-    internal class Hideout
+    public struct Hideout
     {
+        public Area[] Areas { get; set; }
     }
 
-    internal struct Area
+    public struct Area
     {
         public bool active { get; set; }
         public int completeTime { get; set; } // UTX time maybe?
+        public bool constructing { get; set; }
+        public string lastRecipe { get; set; }
+        public int level { get; set; }
+        public bool passiveBonusesEnabled { get; set; }
+        public Module type { get; set; }
     }
     public enum Module
     {
