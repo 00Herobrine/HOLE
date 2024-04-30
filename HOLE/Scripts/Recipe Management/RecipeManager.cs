@@ -1,6 +1,4 @@
-﻿using HOLE.Scripts.Tarkov_Stuff;
-using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace HOLE.Scripts
 {

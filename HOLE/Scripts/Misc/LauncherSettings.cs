@@ -1,44 +1,42 @@
-﻿namespace HOLE.Scripts.Misc
+﻿using HOLE.Scripts.Presets;
+
+namespace HOLE.Scripts.Misc
 {
-    public class LauncherSettings
+    public class LauncherSettings : Preset
     {
+        public PresetInfo Preset { get; set; }
+        #region Paths
+        public string LauncherDataPath { get; set; }
+        public string InstancesPath { get; set; }
+        public string ModsPath { get; set; }
+        public string DownloadingModsPath { get; set; }
+        public string BackupsPath { get; set; }
+        public string PresetsPath { get; set; }
+        public string IconPacksPath { get; set; }
+        #endregion
+
         public LauncherSettings()
         {
-            LauncherPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HerosLauncher");
-            InstancesPath = Path.Combine(LauncherPath, "Instances");
-            ModsPath = Path.Combine(LauncherPath, "Mods");
+            Preset = new();
+            LauncherDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HerosLauncher");
+            InstancesPath = Path.Combine(LauncherDataPath, "Instances");
+            ModsPath = Path.Combine(LauncherDataPath, "Mods");
             DownloadingModsPath = Path.Combine(ModsPath, "Downloading");
-            BackupsPath = Path.Combine(LauncherPath, "backups");
+            BackupsPath = Path.Combine(LauncherDataPath, "Backups");
+            PresetsPath = Path.Combine(LauncherDataPath, "Presets");
+            IconPacksPath = Path.Combine(LauncherDataPath, "Icons");
         }
-        public string Version { get; internal set; } = FileUtils.GetProjectVersion();
-        public bool MinimizeLauncher { get; internal set; } = false;
-        public bool AutoLaunch { get; internal set; } = false;
-        public bool AutoStartAki { get; internal set; } = false;
-        public bool AutoKillAki { get; internal set; } = false;
-        public string Prefix { get; internal set; } = "[H.O.L.E]";
-        public string Language { get; internal set; } = "en";
-        public bool Debug { get; internal set; } = false;
-
-        // Paths
-        public string LauncherPath { get; internal set; }
-        public string InstancesPath { get; internal set; }
-        public string ModsPath { get; internal set; }
-        public string DownloadingModsPath { get; internal set; }
-        public string BackupsPath { get; internal set; }
-
-        public override string ToString()
-        {
-            return $"Version: {Version},\n" +
-                $"MinimizeLauncher: {MinimizeLauncher},\n" +
-                $"AutoLaunch: {AutoLaunch}\n" +
-                $"AutoStartAki: {AutoStartAki}\n" +
-                $"AutoKillAki: {AutoKillAki}\n" +
-                $"Prefix: {Prefix}\n" +
-                $"LauncherPath: {LauncherPath}\n" +
-                $"InstancesPath: {InstancesPath}\n" +
-                $"ModsPath: {ModsPath}\n" +
-                $"DownloadingPath: {DownloadingModsPath}\n" +
-                $"BackupsPath: {BackupsPath}\n";
-        }
+    }
+    public struct PresetInfo()
+    {
+        public string? Name { get; set; }
+        public string Version { get; set; } = FileUtils.GetProjectVersion();
+        public bool MinimizeLauncher { get; set; } = false;
+        public bool AutoLaunch { get; set; } = false;
+        public bool AutoStartAki { get; set; } = false;
+        public bool AutoKillAki { get; set; } = false;
+        public string Prefix { get; set; } = "[H.O.L.E]";
+        public string Language { get; set; } = "en";
+        public bool Debug { get; set; } = false;
     }
 }

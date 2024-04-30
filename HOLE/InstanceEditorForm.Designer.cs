@@ -29,31 +29,30 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InstanceEditorForm));
-            ListViewItem listViewItem1 = new ListViewItem(new string[] { "662bd45200012640ea93c910", "Hero", "Edge of Darkness", "42", "13", "3.8.0 (29197)" }, -1);
+            ListViewItem listViewItem2 = new ListViewItem(new string[] { "662bd45200012640ea93c910", "Hero", "Edge of Darkness", "42", "13", "3.8.0 (29197)" }, -1);
             toolStrip1 = new ToolStrip();
-            toolStripButton1 = new ToolStripButton();
             toolStripButton2 = new ToolStripButton();
             toolStripButton3 = new ToolStripButton();
+            toolStripButton1 = new ToolStripButton();
             UserTab = new TabControl();
             ModsTab = new TabPage();
             ProfilesTab = new TabPage();
-            UserPanel = new Panel();
-            SPTSettingsTab = new TabPage();
+            toolStrip2 = new ToolStrip();
+            toolStripButton5 = new ToolStripButton();
+            toolStripButton4 = new ToolStripButton();
             listView1 = new ListView();
             ID = new ColumnHeader();
-            Name = "InstanceEditorForm";
             Edition = new ColumnHeader();
-            toolStrip2 = new ToolStrip();
-            toolStripButton4 = new ToolStripButton();
-            toolStripButton5 = new ToolStripButton();
             PMCLevel = new ColumnHeader();
             ScavLevel = new ColumnHeader();
             AKIVersion = new ColumnHeader();
+            SPTSettingsTab = new TabPage();
+            UserPanel = new Panel();
             toolStrip1.SuspendLayout();
             UserTab.SuspendLayout();
             ProfilesTab.SuspendLayout();
-            UserPanel.SuspendLayout();
             toolStrip2.SuspendLayout();
+            UserPanel.SuspendLayout();
             SuspendLayout();
             // 
             // toolStrip1
@@ -68,14 +67,6 @@
             toolStrip1.Stretch = true;
             toolStrip1.TabIndex = 2;
             toolStrip1.Text = "toolStrip1";
-            // 
-            // toolStripButton1
-            // 
-            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
-            toolStripButton1.ImageTransparentColor = Color.Magenta;
-            toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(85, 36);
-            toolStripButton1.Text = "User";
             // 
             // toolStripButton2
             // 
@@ -92,6 +83,14 @@
             toolStripButton3.Name = "toolStripButton3";
             toolStripButton3.Size = new Size(85, 36);
             toolStripButton3.Text = "BepInEx";
+            // 
+            // toolStripButton1
+            // 
+            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.ImageTransparentColor = Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(85, 36);
+            toolStripButton1.Text = "User";
             // 
             // UserTab
             // 
@@ -127,14 +126,70 @@
             ProfilesTab.Text = "Profiles";
             ProfilesTab.UseVisualStyleBackColor = true;
             // 
-            // UserPanel
+            // toolStrip2
             // 
-            UserPanel.Controls.Add(UserTab);
-            UserPanel.Dock = DockStyle.Fill;
-            UserPanel.Location = new Point(88, 0);
-            UserPanel.Name = "UserPanel";
-            UserPanel.Size = new Size(712, 450);
-            UserPanel.TabIndex = 0;
+            toolStrip2.Dock = DockStyle.Right;
+            toolStrip2.Items.AddRange(new ToolStripItem[] { toolStripButton5, toolStripButton4 });
+            toolStrip2.Location = new Point(646, 3);
+            toolStrip2.Name = "toolStrip2";
+            toolStrip2.Size = new Size(55, 416);
+            toolStrip2.TabIndex = 1;
+            toolStrip2.Text = "toolStrip2";
+            // 
+            // toolStripButton5
+            // 
+            toolStripButton5.Image = (Image)resources.GetObject("toolStripButton5.Image");
+            toolStripButton5.ImageTransparentColor = Color.Magenta;
+            toolStripButton5.Name = "toolStripButton5";
+            toolStripButton5.Size = new Size(52, 20);
+            toolStripButton5.Text = "Edit";
+            // 
+            // toolStripButton4
+            // 
+            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
+            toolStripButton4.ImageTransparentColor = Color.Magenta;
+            toolStripButton4.Name = "toolStripButton4";
+            toolStripButton4.Size = new Size(52, 20);
+            toolStripButton4.Text = "Wipe";
+            // 
+            // listView1
+            // 
+            listView1.Columns.AddRange(new ColumnHeader[] { ID, Edition, PMCLevel, ScavLevel, AKIVersion });
+            listView1.Dock = DockStyle.Fill;
+            listView1.Items.AddRange(new ListViewItem[] { listViewItem2 });
+            listView1.Location = new Point(3, 3);
+            listView1.Name = "listView1";
+            listView1.Size = new Size(698, 416);
+            listView1.TabIndex = 0;
+            listView1.UseCompatibleStateImageBehavior = false;
+            listView1.View = View.Details;
+            // 
+            // ID
+            // 
+            ID.Text = "ID";
+            ID.Width = 165;
+            // 
+            // Edition
+            // 
+            Edition.Text = "Edition";
+            Edition.Width = 125;
+            // 
+            // PMCLevel
+            // 
+            PMCLevel.Text = "PMC";
+            PMCLevel.TextAlign = HorizontalAlignment.Center;
+            PMCLevel.Width = 50;
+            // 
+            // ScavLevel
+            // 
+            ScavLevel.Text = "Scav";
+            ScavLevel.TextAlign = HorizontalAlignment.Center;
+            ScavLevel.Width = 50;
+            // 
+            // AKIVersion
+            // 
+            AKIVersion.Text = "AKI Version";
+            AKIVersion.Width = 85;
             // 
             // SPTSettingsTab
             // 
@@ -146,79 +201,14 @@
             SPTSettingsTab.Text = "SPTSettings";
             SPTSettingsTab.UseVisualStyleBackColor = true;
             // 
-            // listView1
+            // UserPanel
             // 
-            listView1.Columns.AddRange(new ColumnHeader[] { ID, NameColumn, Edition, PMCLevel, ScavLevel, AKIVersion });
-            listView1.Dock = DockStyle.Fill;
-            listView1.Items.AddRange(new ListViewItem[] { listViewItem1 });
-            listView1.Location = new Point(3, 3);
-            listView1.Name = "listView1";
-            listView1.Size = new Size(698, 416);
-            listView1.TabIndex = 0;
-            listView1.UseCompatibleStateImageBehavior = false;
-            listView1.View = View.Details;
-            // 
-            // ID
-            // 
-            ID.DisplayIndex = 4;
-            ID.Text = "ID";
-            ID.Width = 165;
-            // 
-            // NameColumn
-            // 
-            NameColumn.DisplayIndex = 0;
-            NameColumn.Text = "Name";
-            // 
-            // Edition
-            // 
-            Edition.DisplayIndex = 1;
-            Edition.Text = "Edition";
-            Edition.Width = 125;
-            // 
-            // toolStrip2
-            // 
-            toolStrip2.Dock = DockStyle.Right;
-            toolStrip2.Items.AddRange(new ToolStripItem[] { toolStripButton5, toolStripButton4 });
-            toolStrip2.Location = new Point(646, 3);
-            toolStrip2.Name = "toolStrip2";
-            toolStrip2.Size = new Size(55, 416);
-            toolStrip2.TabIndex = 1;
-            toolStrip2.Text = "toolStrip2";
-            // 
-            // toolStripButton4
-            // 
-            toolStripButton4.Image = (Image)resources.GetObject("toolStripButton4.Image");
-            toolStripButton4.ImageTransparentColor = Color.Magenta;
-            toolStripButton4.Name = "toolStripButton4";
-            toolStripButton4.Size = new Size(52, 20);
-            toolStripButton4.Text = "Wipe";
-            // 
-            // toolStripButton5
-            // 
-            toolStripButton5.Image = (Image)resources.GetObject("toolStripButton5.Image");
-            toolStripButton5.ImageTransparentColor = Color.Magenta;
-            toolStripButton5.Name = "toolStripButton5";
-            toolStripButton5.Size = new Size(52, 20);
-            toolStripButton5.Text = "Edit";
-            // 
-            // PMCLevel
-            // 
-            PMCLevel.DisplayIndex = 2;
-            PMCLevel.Text = "PMC";
-            PMCLevel.TextAlign = HorizontalAlignment.Center;
-            PMCLevel.Width = 50;
-            // 
-            // ScavLevel
-            // 
-            ScavLevel.DisplayIndex = 3;
-            ScavLevel.Text = "Scav";
-            ScavLevel.TextAlign = HorizontalAlignment.Center;
-            ScavLevel.Width = 50;
-            // 
-            // AKIVersion
-            // 
-            AKIVersion.Text = "AKI Version";
-            AKIVersion.Width = 85;
+            UserPanel.Controls.Add(UserTab);
+            UserPanel.Dock = DockStyle.Fill;
+            UserPanel.Location = new Point(88, 0);
+            UserPanel.Name = "UserPanel";
+            UserPanel.Size = new Size(712, 450);
+            UserPanel.TabIndex = 0;
             // 
             // InstanceEditorForm
             // 
@@ -235,9 +225,9 @@
             UserTab.ResumeLayout(false);
             ProfilesTab.ResumeLayout(false);
             ProfilesTab.PerformLayout();
-            UserPanel.ResumeLayout(false);
             toolStrip2.ResumeLayout(false);
             toolStrip2.PerformLayout();
+            UserPanel.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }

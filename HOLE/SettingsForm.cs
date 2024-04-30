@@ -24,7 +24,7 @@ namespace HOLE
         private void SetInstancesPath(string path, bool save = false)
         {
             InstancesPath.Text = path;
-            if (save) Settings.SetInstancesPath(path);
+            if (save) Settings.SetInstancesPath(path, save);
         }
 
         private void InstancesPath_KeyDown(object sender, KeyEventArgs e)
@@ -35,12 +35,17 @@ namespace HOLE
 
         private void SettingsForm_Load(object sender, EventArgs e)
         {
-            //LoadTab
+            LoadTab();
         }
 
         private void LoadTab()
         {
-            //PopulateInfo();
+            PopulateInfo();
+        }
+
+        private void PopulateInfo()
+        {
+            InstancesPath.Text = Settings.LauncherSettings.InstancesPath;
         }
     }
 }

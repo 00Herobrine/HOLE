@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
+using System.Text.Json;
 
 namespace HOLE.Scripts
 {
     internal static class InstanceManager
     {
-        public static string directory => Settings.InstancesPath;
         public static Instance? SelectedInstance { get; private set; } 
         public static Dictionary<string, Instance> Instances { get; private set; } = new();
         public static event EventHandler<InstanceEventArgs>? InstanceChangingEvent;
@@ -15,11 +15,11 @@ namespace HOLE.Scripts
         public static void Cache()
         {
             Instances.Clear();
-            foreach (string subdir in Directory.GetDirectories(directory)) 
-                Add(subdir);
+            foreach (string InstancePath in Directory.GetDirectories(Settings.InstancesPath)) 
+                Add(InstancePath);
         }
         public static Instance? Get(string name) => Instances.TryGetValue(name, out Instance instance) ? instance : null;
-        public static void Add(string Path, string? Name = null) => Add(new Instance(Path, Name));
+        public static void Add(string Path) => Add(new Instance(Path));
         public static void Add(Instance Instance)
         {
             string name = Instance.Name;
@@ -49,10 +49,23 @@ namespace HOLE.Scripts
         public Instance? Instance { get; } = newInstance;
     }
 
-    public struct Instance(string Directory, string? Name = null)
+    public struct Instance
     {
-        public string Directory { get; set; } = $"{Directory}{Path.DirectorySeparatorChar}";
-        public string Name { get; set; } = Name ?? Directory.Split(Path.DirectorySeparatorChar).Last();
+        public Instance(string InstanceDirectory)
+        {
+            Directory = InstanceDirectory;
+            Name = Path.GetFileName(InstanceDirectory) ?? InstanceDirectory.Split(Path.DirectorySeparatorChar).Last();
+            ConfigCheck();
+        }
+        private static readonly JsonSerializerOptions options = new() { WriteIndented = true };
+        public string Directory { get; set; }
+        public string Name { get; set; }
+        public void ConfigCheck()
+        {
+            if (File.Exists(ConfigPath)) return;
+            File.WriteAllText(ConfigPath, JsonSerializer.Serialize(new InstanceConfig() { IconPath = Path.Combine(Directory, "icon.png") }, options));
+        }
+        public readonly string ConfigPath => Path.Combine(Directory, "config.json");
         public readonly string AkiDataPath => Path.Combine(Directory, "Aki_Data");
         public readonly string ServerPath => Path.Combine(AkiDataPath, "Server");
         public readonly string DatabasePath => Path.Combine(ServerPath, "database");
@@ -67,5 +80,10 @@ namespace HOLE.Scripts
         public readonly string UserPath => Path.Combine(Directory, "user");
         public readonly string ModsPath => Path.Combine(UserPath, "mods");
         public readonly string ProfilesPath => Path.Combine(UserPath, "profiles");
+    }
+
+    public struct InstanceConfig
+    {
+        public string IconPath { get; set; }
     }
 }

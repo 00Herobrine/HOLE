@@ -58,15 +58,15 @@
             AddInstanceButton = new ToolStripSplitButton();
             AddNewInstanceButton = new ToolStripMenuItem();
             AddExistingInstanceButton = new ToolStripMenuItem();
-            toolStripSplitButton2 = new ToolStripSplitButton();
+            FoldersButton = new ToolStripSplitButton();
             instanceFolder = new ToolStripMenuItem();
-            toolStripMenuItem3 = new ToolStripMenuItem();
+            InstancesFolderButton = new ToolStripMenuItem();
             toolStripSeparator4 = new ToolStripSeparator();
-            modsToolStripMenuItem = new ToolStripMenuItem();
-            sharedModsToolStripMenuItem = new ToolStripMenuItem();
+            ModsFolderButton = new ToolStripMenuItem();
+            SharedModsFolderButton = new ToolStripMenuItem();
             toolStripSeparator5 = new ToolStripSeparator();
-            launcherToolStripMenuItem = new ToolStripMenuItem();
-            iconsToolStripMenuItem = new ToolStripMenuItem();
+            LauncherFolderButton = new ToolStripMenuItem();
+            IconsFolderButton = new ToolStripMenuItem();
             SettingsButton = new ToolStripButton();
             HelpButton = new ToolStripSplitButton();
             UpdateButton = new ToolStripButton();
@@ -349,7 +349,7 @@
             // 
             toolStrip2.BackColor = Color.Gray;
             toolStrip2.Dock = DockStyle.None;
-            toolStrip2.Items.AddRange(new ToolStripItem[] { AddInstanceButton, toolStripSplitButton2, SettingsButton, HelpButton, UpdateButton, PlayerButton });
+            toolStrip2.Items.AddRange(new ToolStripItem[] { AddInstanceButton, FoldersButton, SettingsButton, HelpButton, UpdateButton, PlayerButton });
             toolStrip2.Location = new Point(0, 0);
             toolStrip2.Name = "toolStrip2";
             toolStrip2.Padding = new Padding(0, 3, 1, 3);
@@ -368,6 +368,7 @@
             AddInstanceButton.Name = "AddInstanceButton";
             AddInstanceButton.Size = new Size(110, 20);
             AddInstanceButton.Text = "Add Instance";
+            AddInstanceButton.ButtonClick += AddInstanceButton_ButtonClick;
             // 
             // AddNewInstanceButton
             // 
@@ -379,66 +380,68 @@
             // AddExistingInstanceButton
             // 
             AddExistingInstanceButton.Name = "AddExistingInstanceButton";
-            AddExistingInstanceButton.Size = new Size(180, 22);
+            AddExistingInstanceButton.Size = new Size(149, 22);
             AddExistingInstanceButton.Text = "From Existing";
             AddExistingInstanceButton.Click += AddExistingInstanceButton_Click;
             // 
-            // toolStripSplitButton2
+            // FoldersButton
             // 
-            toolStripSplitButton2.DropDownItems.AddRange(new ToolStripItem[] { instanceFolder, toolStripMenuItem3, toolStripSeparator4, modsToolStripMenuItem, sharedModsToolStripMenuItem, toolStripSeparator5, launcherToolStripMenuItem, iconsToolStripMenuItem });
-            toolStripSplitButton2.Font = new Font("Arial", 9F);
-            toolStripSplitButton2.ForeColor = SystemColors.HighlightText;
-            toolStripSplitButton2.Image = (Image)resources.GetObject("toolStripSplitButton2.Image");
-            toolStripSplitButton2.ImageTransparentColor = Color.Magenta;
-            toolStripSplitButton2.Name = "toolStripSplitButton2";
-            toolStripSplitButton2.Size = new Size(81, 20);
-            toolStripSplitButton2.Text = "Folders";
+            FoldersButton.DropDownItems.AddRange(new ToolStripItem[] { instanceFolder, InstancesFolderButton, toolStripSeparator4, ModsFolderButton, SharedModsFolderButton, toolStripSeparator5, LauncherFolderButton, IconsFolderButton });
+            FoldersButton.Font = new Font("Arial", 9F);
+            FoldersButton.ForeColor = SystemColors.HighlightText;
+            FoldersButton.Image = (Image)resources.GetObject("FoldersButton.Image");
+            FoldersButton.ImageTransparentColor = Color.Magenta;
+            FoldersButton.Name = "FoldersButton";
+            FoldersButton.Size = new Size(81, 20);
+            FoldersButton.Text = "Folders";
             // 
             // instanceFolder
             // 
             instanceFolder.Name = "instanceFolder";
-            instanceFolder.Size = new Size(147, 22);
+            instanceFolder.Size = new Size(180, 22);
             instanceFolder.Text = "Instance";
+            instanceFolder.Click += instanceFolder_Click;
             // 
-            // toolStripMenuItem3
+            // InstancesFolderButton
             // 
-            toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(147, 22);
-            toolStripMenuItem3.Text = "Instances";
+            InstancesFolderButton.Name = "InstancesFolderButton";
+            InstancesFolderButton.Size = new Size(180, 22);
+            InstancesFolderButton.Text = "Instances";
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(144, 6);
+            toolStripSeparator4.Size = new Size(177, 6);
             // 
-            // modsToolStripMenuItem
+            // ModsFolderButton
             // 
-            modsToolStripMenuItem.Name = "modsToolStripMenuItem";
-            modsToolStripMenuItem.Size = new Size(147, 22);
-            modsToolStripMenuItem.Text = "Mods";
+            ModsFolderButton.Name = "ModsFolderButton";
+            ModsFolderButton.Size = new Size(180, 22);
+            ModsFolderButton.Text = "Mods";
             // 
-            // sharedModsToolStripMenuItem
+            // SharedModsFolderButton
             // 
-            sharedModsToolStripMenuItem.Name = "sharedModsToolStripMenuItem";
-            sharedModsToolStripMenuItem.Size = new Size(147, 22);
-            sharedModsToolStripMenuItem.Text = "Shared Mods";
+            SharedModsFolderButton.Name = "SharedModsFolderButton";
+            SharedModsFolderButton.Size = new Size(180, 22);
+            SharedModsFolderButton.Text = "Shared Mods";
             // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new Size(144, 6);
+            toolStripSeparator5.Size = new Size(177, 6);
             // 
-            // launcherToolStripMenuItem
+            // LauncherFolderButton
             // 
-            launcherToolStripMenuItem.Name = "launcherToolStripMenuItem";
-            launcherToolStripMenuItem.Size = new Size(147, 22);
-            launcherToolStripMenuItem.Text = "Launcher";
+            LauncherFolderButton.Name = "LauncherFolderButton";
+            LauncherFolderButton.Size = new Size(180, 22);
+            LauncherFolderButton.Text = "Launcher";
+            LauncherFolderButton.Click += LauncherFolderButton_Click;
             // 
-            // iconsToolStripMenuItem
+            // IconsFolderButton
             // 
-            iconsToolStripMenuItem.Name = "iconsToolStripMenuItem";
-            iconsToolStripMenuItem.Size = new Size(147, 22);
-            iconsToolStripMenuItem.Text = "Icons";
+            IconsFolderButton.Name = "IconsFolderButton";
+            IconsFolderButton.Size = new Size(180, 22);
+            IconsFolderButton.Text = "Icons";
             // 
             // SettingsButton
             // 
@@ -546,15 +549,15 @@
         private ToolStripSplitButton AddInstanceButton;
         private ToolStripMenuItem AddNewInstanceButton;
         private ToolStripMenuItem AddExistingInstanceButton;
-        private ToolStripSplitButton toolStripSplitButton2;
+        private ToolStripSplitButton FoldersButton;
         private ToolStripMenuItem instanceFolder;
-        private ToolStripMenuItem toolStripMenuItem3;
+        private ToolStripMenuItem InstancesFolderButton;
         private ToolStripSeparator toolStripSeparator4;
-        private ToolStripMenuItem modsToolStripMenuItem;
-        private ToolStripMenuItem sharedModsToolStripMenuItem;
+        private ToolStripMenuItem ModsFolderButton;
+        private ToolStripMenuItem SharedModsFolderButton;
         private ToolStripSeparator toolStripSeparator5;
-        private ToolStripMenuItem launcherToolStripMenuItem;
-        private ToolStripMenuItem iconsToolStripMenuItem;
+        private ToolStripMenuItem LauncherFolderButton;
+        private ToolStripMenuItem IconsFolderButton;
         private ToolStripButton SettingsButton;
         private ToolStripSplitButton HelpButton;
         private ToolStripButton UpdateButton;

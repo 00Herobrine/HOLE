@@ -6,7 +6,7 @@ namespace HOLE.Scripts
     {
         public static void Log(params string[]? args)
         {
-            if (!Settings.LauncherSettings.Debug || args == null) return;
+            if (!Settings.LauncherSettings.Preset.Debug || args == null) return;
             foreach(string arg in args)
                 Debug.WriteLine(arg);
         }

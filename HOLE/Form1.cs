@@ -23,7 +23,15 @@ namespace HOLE
             DisableGameButtons();
             Settings.Initialize();
             LoadInstances();
+            LoadIcons();
         }
+
+        private void LoadIcons()
+        {
+            IconPack icons = Settings.SelectedIcons;
+            AddInstanceButton.Image = icons.FactionIcons.BEAR.Image;
+        }
+
         private void SubToEvents()
         {
             InstanceManager.InstanceChangedEvent += LoadInstance;
@@ -161,11 +169,19 @@ namespace HOLE
             if (InstanceView.SelectedItems.Count == 1) selectedInstance = InstanceManager.Get(InstanceView.SelectedItems[0].Text);
             InstanceManager.SetSelected(selectedInstance);
         }
+        private void AddInstanceButton_ButtonClick(object sender, EventArgs e)
+        {
+
+        }
         private void AddNewInstanceButton_Click(object sender, EventArgs e)
         {
             //InstanceManager.;
         }
         private void AddExistingInstanceButton_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void instanceFolder_Click(object sender, EventArgs e)
         {
 
         }
@@ -204,6 +220,11 @@ namespace HOLE
         private void SettingsButton_Click(object sender, EventArgs e)
         {
             OpenForm<SettingsForm>();
+        }
+
+        private void LauncherFolderButton_Click(object sender, EventArgs e)
+        {
+            Process.Start("explorer", Settings.LauncherPath);
         }
     }
 }
