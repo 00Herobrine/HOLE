@@ -1,27 +1,34 @@
 ﻿namespace HOLE.Scripts.Misc
 {
-    public struct LauncherSettings()
+    public class LauncherSettings
     {
-        public string Version { get; set; } = FileUtils.GetProjectVersion();
-        public int Lang { get; set; } = 0;
-        public bool MinimizeLauncher { get; set; } = false;
-        public bool AutoLaunch { get; set; } = false;
-        public bool AutoStartAki { get; set; } = false;
-        public bool AutoKillAki { get; set; } = false;
+        public LauncherSettings()
+        {
+            LauncherPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HerosLauncher");
+            InstancesPath = Path.Combine(LauncherPath, "Instances");
+            ModsPath = Path.Combine(LauncherPath, "Mods");
+            DownloadingModsPath = Path.Combine(ModsPath, "Downloading");
+            BackupsPath = Path.Combine(LauncherPath, "backups");
+        }
+        public string Version { get; internal set; } = FileUtils.GetProjectVersion();
+        public bool MinimizeLauncher { get; internal set; } = false;
+        public bool AutoLaunch { get; internal set; } = false;
+        public bool AutoStartAki { get; internal set; } = false;
+        public bool AutoKillAki { get; internal set; } = false;
+        public string Prefix { get; internal set; } = "[H.O.L.E]";
+        public string Language { get; internal set; } = "en";
+        public bool Debug { get; internal set; } = false;
 
-        // Important Stuff
-        public string Prefix { get; private set; } = "[H.O.L.E]";
-        public string LauncherPath { get; private set; } = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}HerosLauncher";
-        public string InstancesPath { get; private set; } = $"{Settings.LauncherPath}{Path.DirectorySeparatorChar}Instances";
-        public string ModsPath { get; private set; } = $"{Settings.LauncherPath}{Path.DirectorySeparatorChar}Mods";
-        public string DownloadingModsPath { get; private set; } = $"{Settings.ModsPath}/Downloading";
-        public static string BackupsPath { get; private set; } = $"{Settings.LauncherPath}{Path.DirectorySeparatorChar}Backups";
-        public static bool Debug { get; private set; } = false;
+        // Paths
+        public string LauncherPath { get; internal set; }
+        public string InstancesPath { get; internal set; }
+        public string ModsPath { get; internal set; }
+        public string DownloadingModsPath { get; internal set; }
+        public string BackupsPath { get; internal set; }
 
         public override string ToString()
         {
             return $"Version: {Version},\n" +
-                $"Lang: {Lang},\n" +
                 $"MinimizeLauncher: {MinimizeLauncher},\n" +
                 $"AutoLaunch: {AutoLaunch}\n" +
                 $"AutoStartAki: {AutoStartAki}\n" +

@@ -19,7 +19,7 @@ namespace HOLE.Scripts
             string json = File.ReadAllText(instance?.HideoutPath ?? "");
             Dictionary<string, Recipe>? recipes = JsonSerializer.Deserialize<Dictionary<string, Recipe>>(json);
             if (recipes != null) Recipes = recipes;
-            Debug.WriteLine($"Cached {Recipes.Count} Recipes.");
+            Logger.Log($"Cached {Recipes.Count} Recipes.");
         }
         private static void CacheRecipe(Recipe recipe)
         {

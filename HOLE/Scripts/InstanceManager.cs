@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
 
 namespace HOLE.Scripts
 {
@@ -7,6 +7,10 @@ namespace HOLE.Scripts
         public static string directory => Settings.InstancesPath;
         public static Instance? SelectedInstance { get; private set; } 
         public static Dictionary<string, Instance> Instances { get; private set; } = new();
+        public static event EventHandler<InstanceEventArgs>? InstanceChangingEvent;
+        public static event EventHandler<InstanceEventArgs>? InstanceChangedEvent;
+        public static event EventHandler<InstanceEventArgs>? InstanceAddedEvent;
+        public static event EventHandler<InstanceEventArgs>? InstanceRemovedEvent;
 
         public static void Cache()
         {
@@ -19,27 +23,36 @@ namespace HOLE.Scripts
         public static void Add(Instance Instance)
         {
             string name = Instance.Name;
-            if (Instances.ContainsKey(name)) Debug.WriteLine($"{name} is already in use");
+            if (Instances.ContainsKey(name)) Logger.Log($"{name} is already in use.");
             Instances.Add(name, Instance);
-            Debug.WriteLine("Added Instance " + name);
+            InstanceAddedEvent?.Invoke(null, new InstanceEventArgs(Instance));
+            Logger.Log($"Added Instance {name}.");
         }
-
         public static void Remove(string name)
         {
-            Instances.Remove(name);
+            Instance? instance = Instances[name];
+            if (Instances.Remove(name)) InstanceRemovedEvent?.Invoke(null, new InstanceEventArgs(instance));
         }
 
         internal static void SetSelected(Instance? selectedInstance)
         {
+            var args = new InstanceEventArgs(selectedInstance);
+            InstanceChangingEvent?.Invoke(null, args);
+            if (args.Cancel) return;
             SelectedInstance = selectedInstance;
+            InstanceChangedEvent?.Invoke(null, args);
         }
+    }
+
+    public class InstanceEventArgs(Instance? newInstance) : CancelEventArgs
+    {
+        public Instance? Instance { get; } = newInstance;
     }
 
     public struct Instance(string Directory, string? Name = null)
     {
         public string Directory { get; set; } = $"{Directory}{Path.DirectorySeparatorChar}";
         public string Name { get; set; } = Name ?? Directory.Split(Path.DirectorySeparatorChar).Last();
-        public void StoreLocales() => Settings.StoreLocales(this);
         public readonly string AkiDataPath => Path.Combine(Directory, "Aki_Data");
         public readonly string ServerPath => Path.Combine(AkiDataPath, "Server");
         public readonly string DatabasePath => Path.Combine(ServerPath, "database");
@@ -49,10 +62,10 @@ namespace HOLE.Scripts
         public readonly string GlobalLocale => Path.Combine(GlobalLocaleDir, $"{Settings.Language}.json");
         public readonly string ServerLocaleDir => Path.Combine(LocalesPath, "server");
         public readonly string ServerLocale => Path.Combine(ServerLocaleDir, $"{Settings.Language}.json");
-        public readonly string BepInExPath => $"{Directory}BepInEx{Path.DirectorySeparatorChar}";
-        public readonly string PluginsPath => $"{BepInExPath}plugins{Path.DirectorySeparatorChar}";
-        public readonly string UserPath => $"{Directory}User{Path.DirectorySeparatorChar}";
-        public readonly string ModsPath => $"{UserPath}mods{Path.DirectorySeparatorChar}";
-        public readonly string ProfilesPath => $"{UserPath}profiles{Path.DirectorySeparatorChar}";
+        public readonly string BepInExPath => Path.Combine(Directory, "BepInEx");
+        public readonly string PluginsPath => Path.Combine(BepInExPath, "Plugins");
+        public readonly string UserPath => Path.Combine(Directory, "user");
+        public readonly string ModsPath => Path.Combine(UserPath, "mods");
+        public readonly string ProfilesPath => Path.Combine(UserPath, "profiles");
     }
 }

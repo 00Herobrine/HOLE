@@ -4,13 +4,11 @@ namespace HOLE.Scripts
 {
     public static class Logger
     {
-        public static void Log(params string[] args)
+        public static void Log(params string[]? args)
         {
+            if (!Settings.LauncherSettings.Debug || args == null) return;
             foreach(string arg in args)
-            {
                 Debug.WriteLine(arg);
-                //Form1.Log(arg, "H.O.L.E");
-            }
         }
     }
 }

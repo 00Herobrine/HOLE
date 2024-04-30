@@ -16,6 +16,20 @@ namespace HOLE
             await DetectAki();
         }
 
+        private void Initialize()
+        {
+            SubToEvents();
+            KillAKIButton.Enabled = false;
+            DisableGameButtons();
+            Settings.Initialize();
+            LoadInstances();
+        }
+        private void SubToEvents()
+        {
+            InstanceManager.InstanceChangedEvent += LoadInstance;
+        }
+
+        #region Aki Functions
         public static async Task<bool> IsAkiRunning()
         {
             try
@@ -23,9 +37,10 @@ namespace HOLE
                 await Task.Delay(0);
                 Process[] process = Process.GetProcessesByName("aki.server");
                 return process.Length > 0;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                Logger.Log(ex.ToString());
                 return false;
             }
         }
@@ -39,19 +54,68 @@ namespace HOLE
                 EnableGameButtons();
                 // Disallow editing server values while live as they won't save
                 DisableServerConfigButtons();
-            } else
+            }
+            else
             {
                 DisableGameButtons();
                 KillAKIButton.Enabled = false;
             }
         }
-        private void KillAki()
+        private async Task KillAki()
+        {
+            bool isRunning = await IsAkiRunning();
+            if (!isRunning) return;
+            Process[] akiProcesses = Process.GetProcessesByName("aki.server");
+            foreach (Process aki in akiProcesses)
+            {
+                aki.Kill();
+                Logger.Log($"Killed {aki.ProcessName} ({aki.Id})");
+            }
+        }
+        private async void KillAKIButton_Click(object sender, EventArgs e)
+        {
+            await KillAki();
+        }
+
+        private void StartAKIButton_Click(object sender, EventArgs e)
+        {
+            //StartAndBindAki();
+        }
+        #endregion
+
+        #region Game Functions
+        public static async Task<bool> IsTarkovRunning()
+        {
+            try
+            {
+                await Task.Delay(0);
+                Process[] process = Process.GetProcessesByName("escapefromtarkov");
+                return process.Length > 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.ToString());
+                return false;
+            }
+        }
+        public static void StartTarkov()
         {
 
         }
+        public static async Task KillTarkov() // The true killer was themselves.
+        {
+            bool isRunning = await IsTarkovRunning();
+            if (!isRunning) return;
+            Process[] tarkovProcesses = Process.GetProcessesByName("escapefromtarkov");
+            foreach (Process tarkov in tarkovProcesses)
+            {
+                tarkov.Kill();
+                Logger.Log($"Killed {tarkov.ProcessName} ({tarkov.Id}");
+            }
+        }
         private void EnableGameButtons()
         {
-            PlayButton.Enabled = true;
+            PlayButton.Enabled = InstanceManager.SelectedInstance != null;
             KillGameButton.Enabled = true;
         }
         private void DisableGameButtons()
@@ -59,25 +123,23 @@ namespace HOLE
             PlayButton.Enabled = false;
             KillGameButton.Enabled = false;
         }
-
-        private void DisableServerConfigButtons()
+        private void PlayButton_Click(object sender, EventArgs e)
         {
-
+            StartTarkov();
         }
 
-        private void Initialize()
+        private async void KillGameButton_Click(object sender, EventArgs e)
         {
-            KillAKIButton.Enabled = false;
-            DisableGameButtons();
-            Settings.Initialize();
-            LoadInstances();
-            //TarkovCache.Initialize(instance, Settings.Language);
+            await KillTarkov();
         }
+        #endregion
 
-        // Instances
-        private void AddNewInstanceButton_Click(object sender, EventArgs e)
+        #region Instance Functions
+        private void LoadInstance(object? sender, InstanceEventArgs e)
         {
-            //InstanceManager.;
+            if (e.Cancel) return;
+            PlayButton.Enabled = e.Instance != null;
+            PlayerButton.Text = e.Instance?.Name ?? "";
         }
         private void LoadInstances()
         {
@@ -85,10 +147,9 @@ namespace HOLE
             InstanceView.Items.Clear();
             foreach (Instance instance in InstanceManager.Instances.Values)
             {
-                if (TarkovCache.Directory == null) new TarkovCache(instance);
+                if (TarkovCache.Directory == null) TarkovCache.LoadCache(instance);
                 DisplayInstance(instance);
             }
-            //TarkovCache.Initialize(InstanceManager.Instances.Values.First());
         }
         private void DisplayInstance(Instance instance)
         {
@@ -99,10 +160,18 @@ namespace HOLE
             Instance? selectedInstance = null;
             if (InstanceView.SelectedItems.Count == 1) selectedInstance = InstanceManager.Get(InstanceView.SelectedItems[0].Text);
             InstanceManager.SetSelected(selectedInstance);
-            //InstanceManager.Get(InstanceView.SelectedItems[0].Text);
         }
+        private void AddNewInstanceButton_Click(object sender, EventArgs e)
+        {
+            //InstanceManager.;
+        }
+        private void AddExistingInstanceButton_Click(object sender, EventArgs e)
+        {
 
-        // Update Stuff
+        }
+        #endregion
+
+        #region Update Functions
         private void UpdateButton_Click(object sender, EventArgs e)
         {
             LoadInstances();
@@ -113,20 +182,28 @@ namespace HOLE
         {
 
         }
-        private void SettingsButton_Click(object sender, EventArgs e)
-        {
-            OpenForm<SettingsForm>();
-        }
+        #endregion
 
+        #region Misc
         public static void OpenForm<T>() where T : Form, new()
         {
             var existingForm = Application.OpenForms.OfType<T>().FirstOrDefault();
-
             if (existingForm == null || existingForm.IsDisposed)
                 existingForm = new T();
             if (!existingForm.Visible)
                 existingForm.Show();
             else existingForm.BringToFront();
+        }
+        #endregion
+
+        private void DisableServerConfigButtons()
+        {
+
+        }
+
+        private void SettingsButton_Click(object sender, EventArgs e)
+        {
+            OpenForm<SettingsForm>();
         }
     }
 }

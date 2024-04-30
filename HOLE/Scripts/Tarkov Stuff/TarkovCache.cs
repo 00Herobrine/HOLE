@@ -1,22 +1,33 @@
 ﻿using HOLE.Scripts;
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace HOLE
 {
     public enum ItemType { ARMOR, BACKPACKS, CLOTHING, HEADPHONES, HELMETS, RIGS, FIREARMS,
         AMMO, MAGAZINE, GRENADES, FOOD, CONTAINERS, ITEMS, KNIVES, MAPS, MEDICALS, MODS, MONEY }
-    internal class TarkovCache
+    public static class TarkovCache
     {
         public static Dictionary<string, TarkovItem> Items { get; private set; } = new();
         public static Dictionary<string, TarkovQuest> Quests { get; private set; } = new();
         public static string? Directory { get; private set; }
-        internal TarkovCache(Instance instance)
+
+        public static void Initialize() 
+        {
+            InstanceManager.InstanceChangedEvent += LoadCache;
+        }
+
+        private static void LoadCache(object? sender, InstanceEventArgs e)
+        {
+            if (e.Instance == null) return;
+            LoadCache((Instance)e.Instance);
+        }
+
+        public static void LoadCache(Instance instance)
         {
             Directory = instance.Directory;
-            Debug.WriteLine("Initializing " + instance.GlobalLocale);
+            Logger.Log("Initializing " + instance.GlobalLocale);
             Dictionary<string, string>? locales = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(instance.GlobalLocale));
-            if(locales != null) CacheLocale(locales);
+            if (locales != null) CacheLocale(locales);
         }
 
         private static void CacheLocale(Dictionary<string, string> locales)
@@ -45,7 +56,7 @@ namespace HOLE
                         break;
                 }
             }
-            Debug.WriteLine($"Cached: {Items.Count} Items & {Quests.Count} Quests");
+            Logger.Log($"Cached: {Items.Count} Items & {Quests.Count} Quests");
         }
         private static void CacheItem(string id, string category, string value)
         {
@@ -95,7 +106,7 @@ namespace HOLE
         }
     }
 
-    internal struct TarkovItem(string ID)
+    public struct TarkovItem(string ID)
     {
         public readonly string ID { get; } = ID;
         public string Name { get; set; }
@@ -103,7 +114,7 @@ namespace HOLE
         public string Description { get; set; }
     }
 
-    internal struct TarkovQuest(string ID)
+    public struct TarkovQuest(string ID)
     {
         public readonly string ID { get; } = ID;
         public string name { get; set; }

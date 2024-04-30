@@ -242,6 +242,7 @@
             StartAKIButton.Name = "StartAKIButton";
             StartAKIButton.Size = new Size(79, 20);
             StartAKIButton.Text = "Start AKI";
+            StartAKIButton.Click += StartAKIButton_Click;
             // 
             // KillAKIButton
             // 
@@ -252,6 +253,7 @@
             KillAKIButton.Name = "KillAKIButton";
             KillAKIButton.Size = new Size(79, 20);
             KillAKIButton.Text = "Kill AKI";
+            KillAKIButton.Click += KillAKIButton_Click;
             // 
             // toolStripSeparator2
             // 
@@ -275,6 +277,7 @@
             PlayButton.Name = "PlayButton";
             PlayButton.Size = new Size(79, 20);
             PlayButton.Text = "Play";
+            PlayButton.Click += PlayButton_Click;
             // 
             // KillGameButton
             // 
@@ -285,6 +288,7 @@
             KillGameButton.Name = "KillGameButton";
             KillGameButton.Size = new Size(79, 20);
             KillGameButton.Text = "Kill";
+            KillGameButton.Click += KillGameButton_Click;
             // 
             // toolStripSeparator1
             // 
@@ -375,8 +379,9 @@
             // AddExistingInstanceButton
             // 
             AddExistingInstanceButton.Name = "AddExistingInstanceButton";
-            AddExistingInstanceButton.Size = new Size(149, 22);
+            AddExistingInstanceButton.Size = new Size(180, 22);
             AddExistingInstanceButton.Text = "From Existing";
+            AddExistingInstanceButton.Click += AddExistingInstanceButton_Click;
             // 
             // toolStripSplitButton2
             // 
