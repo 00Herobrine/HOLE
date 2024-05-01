@@ -314,6 +314,7 @@
             InstanceFolderButton.Name = "InstanceFolderButton";
             InstanceFolderButton.Size = new Size(79, 20);
             InstanceFolderButton.Text = "Folder";
+            InstanceFolderButton.Click += InstanceFolderButton_Click;
             // 
             // toolStripSplitButton4
             // 
@@ -398,50 +399,54 @@
             // instanceFolder
             // 
             instanceFolder.Name = "instanceFolder";
-            instanceFolder.Size = new Size(180, 22);
+            instanceFolder.Size = new Size(147, 22);
             instanceFolder.Text = "Instance";
             instanceFolder.Click += instanceFolder_Click;
             // 
             // InstancesFolderButton
             // 
             InstancesFolderButton.Name = "InstancesFolderButton";
-            InstancesFolderButton.Size = new Size(180, 22);
+            InstancesFolderButton.Size = new Size(147, 22);
             InstancesFolderButton.Text = "Instances";
+            InstancesFolderButton.Click += InstancesFolderButton_Click;
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(177, 6);
+            toolStripSeparator4.Size = new Size(144, 6);
             // 
             // ModsFolderButton
             // 
             ModsFolderButton.Name = "ModsFolderButton";
-            ModsFolderButton.Size = new Size(180, 22);
+            ModsFolderButton.Size = new Size(147, 22);
             ModsFolderButton.Text = "Mods";
+            ModsFolderButton.Click += ModsFolderButton_Click;
             // 
             // SharedModsFolderButton
             // 
             SharedModsFolderButton.Name = "SharedModsFolderButton";
-            SharedModsFolderButton.Size = new Size(180, 22);
+            SharedModsFolderButton.Size = new Size(147, 22);
             SharedModsFolderButton.Text = "Shared Mods";
+            SharedModsFolderButton.Click += SharedModsFolderButton_Click;
             // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new Size(177, 6);
+            toolStripSeparator5.Size = new Size(144, 6);
             // 
             // LauncherFolderButton
             // 
             LauncherFolderButton.Name = "LauncherFolderButton";
-            LauncherFolderButton.Size = new Size(180, 22);
+            LauncherFolderButton.Size = new Size(147, 22);
             LauncherFolderButton.Text = "Launcher";
             LauncherFolderButton.Click += LauncherFolderButton_Click;
             // 
             // IconsFolderButton
             // 
             IconsFolderButton.Name = "IconsFolderButton";
-            IconsFolderButton.Size = new Size(180, 22);
+            IconsFolderButton.Size = new Size(147, 22);
             IconsFolderButton.Text = "Icons";
+            IconsFolderButton.Click += IconsFolderButton_Click;
             // 
             // SettingsButton
             // 

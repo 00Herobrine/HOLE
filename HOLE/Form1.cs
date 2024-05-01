@@ -1,13 +1,20 @@
 using HOLE.Scripts;
+using HOLE.Scripts.Misc;
 using System.Diagnostics;
 
 namespace HOLE
 {
     public partial class Form1 : Form
     {
+        public ToolStripItem[] ActiveAkiComponents { get; }
+        public ToolStripItem[] ActiveGameComponents { get; }
+        public ToolStripItem[] ActiveInstanceComponents { get; }
         public Form1()
         {
             InitializeComponent();
+            ActiveAkiComponents = [KillAKIButton];
+            ActiveGameComponents = [KillGameButton];
+            ActiveInstanceComponents = [ModsFolderButton, instanceFolder, InstanceFolderButton, EditInstanceButton, CopyInstanceButton, DeleteInstanceButton];
         }
 
         private async void Form1_Load(object sender, EventArgs e)
@@ -29,7 +36,8 @@ namespace HOLE
         private void LoadIcons()
         {
             IconPack icons = Settings.SelectedIcons;
-            AddInstanceButton.Image = icons.FactionIcons.BEAR.Image;
+            AddInstanceButton.Image = icons.Launcher.AddInstanceButton.Image;
+            PlayerButton.Image = icons.Factions.BEAR.Image;
         }
 
         private void SubToEvents()
@@ -145,9 +153,29 @@ namespace HOLE
         #region Instance Functions
         private void LoadInstance(object? sender, InstanceEventArgs e)
         {
-            if (e.Cancel) return;
-            PlayButton.Enabled = e.Instance != null;
+            CheckInstanceButtons(e.Instance);
+            CheckGameButtons();
             PlayerButton.Text = e.Instance?.Name ?? "";
+        }
+
+        private async void CheckInstanceButtons(Instance? instance)
+        {
+            await Task.Delay(0);
+            CheckPlayButton();
+            ToggleStripItems(instance != null, ActiveInstanceComponents);
+        }
+        private async void CheckPlayButton()
+        {
+            PlayButton.Enabled = InstanceManager.SelectedInstance != null && await IsAkiRunning();
+        }
+        private async void CheckGameButtons()
+        {
+            CheckAkiButtons();
+            ToggleStripItems(await IsTarkovRunning(), ActiveGameComponents);
+        }
+        private async void CheckAkiButtons()
+        {
+            ToggleStripItems(await IsAkiRunning(), ActiveAkiComponents);
         }
         private void LoadInstances()
         {
@@ -190,13 +218,18 @@ namespace HOLE
         #region Update Functions
         private void UpdateButton_Click(object sender, EventArgs e)
         {
-            LoadInstances();
+            //LoadInstances();
             CheckForUpdate();
         }
 
-        private void CheckForUpdate()
+        private async void CheckForUpdate()
         {
-
+            bool updateAvailable = await Updater.CheckForUpdate();
+            if (updateAvailable)
+            {
+                if (MessageBox.Show("There is an update available at {URL}! \nWould you like to open Update Page?",
+                    "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) Process.Start("explorer", "https://github.com");
+            } else MessageBox.Show("You are on the latest version of H.O.L.E!", "Up To Date", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
 
@@ -210,21 +243,54 @@ namespace HOLE
                 existingForm.Show();
             else existingForm.BringToFront();
         }
-        #endregion
-
+        private void LauncherFolderButton_Click(object sender, EventArgs e)
+        {
+            FileUtils.OpenExplorer(Settings.LauncherPath);
+        }
+        private void ToggleStripItems(bool state, params ToolStripItem[] components)
+        {
+            foreach (ToolStripItem item in components)
+            {
+                if (item == null) continue;
+                item.Enabled = state;
+            }
+        }
         private void DisableServerConfigButtons()
         {
 
         }
+        #endregion
 
+        #region UI
+        private void IconsFolderButton_Click(object sender, EventArgs e)
+        {
+            FileUtils.OpenExplorer(Settings.IconPacksPath);
+        }
+        private void InstanceFolderButton_Click(object sender, EventArgs e)
+        {
+            Instance? instance = InstanceManager.SelectedInstance;
+            if (instance == null) return;
+            FileUtils.OpenExplorer(((Instance)instance).Directory);
+        }
+        private void ModsFolderButton_Click(object sender, EventArgs e)
+        {
+            Instance? instance = InstanceManager.SelectedInstance;
+            if (instance == null) return;
+            FileUtils.OpenExplorer(((Instance)instance).ModsPath); // Instance Mods Folder
+        }
+        private void SharedModsFolderButton_Click(object sender, EventArgs e)
+        {
+            FileUtils.OpenExplorer(Settings.ModsPath); // Shared Mods Folder
+        }
+        private void InstancesFolderButton_Click(object sender, EventArgs e)
+        {
+            FileUtils.OpenExplorer(Settings.InstancesPath);
+        }
         private void SettingsButton_Click(object sender, EventArgs e)
         {
             OpenForm<SettingsForm>();
         }
+        #endregion
 
-        private void LauncherFolderButton_Click(object sender, EventArgs e)
-        {
-            Process.Start("explorer", Settings.LauncherPath);
-        }
     }
 }

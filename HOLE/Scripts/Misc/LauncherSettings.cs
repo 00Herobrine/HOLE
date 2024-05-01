@@ -30,7 +30,7 @@ namespace HOLE.Scripts.Misc
     public struct PresetInfo()
     {
         public string? Name { get; set; }
-        public string Version { get; set; } = FileUtils.GetProjectVersion();
+        public string Version { get; set; } = FileUtils.GetProjectVersion().ToString();
         public bool MinimizeLauncher { get; set; } = false;
         public bool AutoLaunch { get; set; } = false;
         public bool AutoStartAki { get; set; } = false;

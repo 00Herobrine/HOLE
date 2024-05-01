@@ -6,7 +6,6 @@ namespace HOLE.Scripts
     internal static class Settings
     {
         public static LauncherSettings LauncherSettings { get; private set; } = new();
-        public static Instance? SelectedInstance { get; private set; }
         public static string LauncherPath => LauncherSettings.LauncherDataPath;
         public static string ConfigPath => Path.Combine(LauncherPath, "config.json");
         public static string InstancesPath => LauncherSettings.InstancesPath;
@@ -62,8 +61,6 @@ namespace HOLE.Scripts
         }
         #endregion
 
-
-
         private static void PathCheck(params string[] paths)
         {
             foreach (string path in paths)
@@ -72,11 +69,6 @@ namespace HOLE.Scripts
                 Directory.CreateDirectory(path);
                 Logger.Log($"Created Directory {path}");
             }
-        }
-
-        internal static void SetSelectedInstance(Instance? instance)
-        {
-            SelectedInstance = instance;
         }
 
         internal static void SetInstancesPath(string path, bool save = false)

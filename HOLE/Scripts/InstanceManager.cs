@@ -51,20 +51,8 @@ namespace HOLE.Scripts
 
     public struct Instance
     {
-        public Instance(string InstanceDirectory)
-        {
-            Directory = InstanceDirectory;
-            Name = Path.GetFileName(InstanceDirectory) ?? InstanceDirectory.Split(Path.DirectorySeparatorChar).Last();
-            ConfigCheck();
-        }
-        private static readonly JsonSerializerOptions options = new() { WriteIndented = true };
-        public string Directory { get; set; }
-        public string Name { get; set; }
-        public void ConfigCheck()
-        {
-            if (File.Exists(ConfigPath)) return;
-            File.WriteAllText(ConfigPath, JsonSerializer.Serialize(new InstanceConfig() { IconPath = Path.Combine(Directory, "icon.png") }, options));
-        }
+        public readonly string Directory { get; }
+        public readonly string Name { get; }
         public readonly string ConfigPath => Path.Combine(Directory, "config.json");
         public readonly string AkiDataPath => Path.Combine(Directory, "Aki_Data");
         public readonly string ServerPath => Path.Combine(AkiDataPath, "Server");
@@ -80,6 +68,19 @@ namespace HOLE.Scripts
         public readonly string UserPath => Path.Combine(Directory, "user");
         public readonly string ModsPath => Path.Combine(UserPath, "mods");
         public readonly string ProfilesPath => Path.Combine(UserPath, "profiles");
+        public Instance(string InstanceDirectory)
+        {
+            Directory = InstanceDirectory;
+            Name = Path.GetFileName(InstanceDirectory) ?? InstanceDirectory.Split(Path.DirectorySeparatorChar).Last();
+            ConfigCheck();
+        }
+
+        private static readonly JsonSerializerOptions options = new() { WriteIndented = true };
+        public void ConfigCheck()
+        {
+            if (File.Exists(ConfigPath)) return;
+            File.WriteAllText(ConfigPath, JsonSerializer.Serialize(new InstanceConfig() { IconPath = Path.Combine(Directory, "icon.png") }, options));
+        }
     }
 
     public struct InstanceConfig
