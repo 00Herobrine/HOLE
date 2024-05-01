@@ -7,8 +7,9 @@ namespace HOLE.Scripts
 {
     public static class Updater
     {
-        private static readonly string GITHUB_URL = "https://api.github.com/repos/hydralauncher/hydra/releases/latest";
-        private static readonly string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36";
+        private static readonly string GITHUB_URL = "https://api.github.com/repos/00Herobrine/HOLE/releases/latest";
+        private static readonly string USER_AGENT = $"H.O.L.E/{FileUtils.GetProjectVersion()} (.NET Core {Environment.Version}; {Environment.OSVersion})";
+
         public static async Task<bool> CheckForUpdate()
         {
             HttpClient client = new();
