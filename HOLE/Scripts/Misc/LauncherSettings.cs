@@ -9,7 +9,8 @@ namespace HOLE.Scripts.Misc
         public string LauncherDataPath { get; set; }
         public string InstancesPath { get; set; }
         public string ModsPath { get; set; }
-        public string DownloadingModsPath { get; set; }
+        public string DownloadPath { get; set; }
+        public string DownloadModsPath { get; set; }
         public string BackupsPath { get; set; }
         public string PresetsPath { get; set; }
         public string IconPacksPath { get; set; }
@@ -21,7 +22,8 @@ namespace HOLE.Scripts.Misc
             LauncherDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "HerosLauncher");
             InstancesPath = Path.Combine(LauncherDataPath, "Instances");
             ModsPath = Path.Combine(LauncherDataPath, "Mods");
-            DownloadingModsPath = Path.Combine(ModsPath, "Downloading");
+            DownloadPath = Path.Combine(LauncherDataPath, "Download");
+            DownloadModsPath = Path.Combine(DownloadPath, "Mods");
             BackupsPath = Path.Combine(LauncherDataPath, "Backups");
             PresetsPath = Path.Combine(LauncherDataPath, "Presets");
             IconPacksPath = Path.Combine(LauncherDataPath, "Icons");

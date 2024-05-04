@@ -59,7 +59,7 @@
             AddNewInstanceButton = new ToolStripMenuItem();
             AddExistingInstanceButton = new ToolStripMenuItem();
             FoldersButton = new ToolStripSplitButton();
-            instanceFolder = new ToolStripMenuItem();
+            InstanceFolder = new ToolStripMenuItem();
             InstancesFolderButton = new ToolStripMenuItem();
             toolStripSeparator4 = new ToolStripSeparator();
             ModsFolderButton = new ToolStripMenuItem();
@@ -304,6 +304,7 @@
             EditInstanceButton.Name = "EditInstanceButton";
             EditInstanceButton.Size = new Size(79, 20);
             EditInstanceButton.Text = "Edit";
+            EditInstanceButton.Click += EditInstanceButton_Click;
             // 
             // InstanceFolderButton
             // 
@@ -387,7 +388,7 @@
             // 
             // FoldersButton
             // 
-            FoldersButton.DropDownItems.AddRange(new ToolStripItem[] { instanceFolder, InstancesFolderButton, toolStripSeparator4, ModsFolderButton, SharedModsFolderButton, toolStripSeparator5, LauncherFolderButton, IconsFolderButton });
+            FoldersButton.DropDownItems.AddRange(new ToolStripItem[] { InstanceFolder, InstancesFolderButton, toolStripSeparator4, ModsFolderButton, SharedModsFolderButton, toolStripSeparator5, LauncherFolderButton, IconsFolderButton });
             FoldersButton.Font = new Font("Arial", 9F);
             FoldersButton.ForeColor = SystemColors.HighlightText;
             FoldersButton.Image = (Image)resources.GetObject("FoldersButton.Image");
@@ -395,13 +396,14 @@
             FoldersButton.Name = "FoldersButton";
             FoldersButton.Size = new Size(81, 20);
             FoldersButton.Text = "Folders";
+            FoldersButton.ButtonClick += FoldersButton_ButtonClick;
             // 
-            // instanceFolder
+            // InstanceFolder
             // 
-            instanceFolder.Name = "instanceFolder";
-            instanceFolder.Size = new Size(147, 22);
-            instanceFolder.Text = "Instance";
-            instanceFolder.Click += instanceFolder_Click;
+            InstanceFolder.Name = "InstanceFolder";
+            InstanceFolder.Size = new Size(147, 22);
+            InstanceFolder.Text = "Instance";
+            InstanceFolder.Click += InstanceFolder_Click;
             // 
             // InstancesFolderButton
             // 
@@ -555,7 +557,7 @@
         private ToolStripMenuItem AddNewInstanceButton;
         private ToolStripMenuItem AddExistingInstanceButton;
         private ToolStripSplitButton FoldersButton;
-        private ToolStripMenuItem instanceFolder;
+        private ToolStripMenuItem InstanceFolder;
         private ToolStripMenuItem InstancesFolderButton;
         private ToolStripSeparator toolStripSeparator4;
         private ToolStripMenuItem ModsFolderButton;

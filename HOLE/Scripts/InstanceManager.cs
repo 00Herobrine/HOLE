@@ -42,6 +42,11 @@ namespace HOLE.Scripts
             SelectedInstance = selectedInstance;
             InstanceChangedEvent?.Invoke(null, args);
         }
+
+        internal static void Open(Instance selectedInstance)
+        {
+            //InstanceManagerForm
+        }
     }
 
     public class InstanceEventArgs(Instance? newInstance) : CancelEventArgs

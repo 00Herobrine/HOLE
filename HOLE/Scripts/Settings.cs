@@ -10,6 +10,8 @@ namespace HOLE.Scripts
         public static string ConfigPath => Path.Combine(LauncherPath, "config.json");
         public static string InstancesPath => LauncherSettings.InstancesPath;
         public static string ModsPath => LauncherSettings.ModsPath;
+        public static string DownloadPath => LauncherSettings.DownloadPath;
+        public static string DownloadModsPath => LauncherSettings.DownloadModsPath;
         public static string BackupsPath => LauncherSettings.BackupsPath;
         public static string IconPacksPath => LauncherSettings.IconPacksPath;
         public static string DefaultPackPath => Path.Combine(IconPacksPath, "Default");

@@ -30,12 +30,12 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProfileEditorForm));
             toolStripContainer1 = new ToolStripContainer();
+            toolStrip1 = new ToolStrip();
             HideoutButton = new ToolStripButton();
             EncyclopediaButton = new ToolStripButton();
             toolStripSeparator1 = new ToolStripSeparator();
             PMCButton = new ToolStripButton();
             ScavButton = new ToolStripButton();
-            toolStrip1 = new ToolStrip();
             HideoutPanel = new Panel();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.SuspendLayout();
@@ -58,6 +58,18 @@
             toolStripContainer1.TabIndex = 0;
             toolStripContainer1.Text = "toolStripContainer1";
             toolStripContainer1.TopToolStripPanelVisible = false;
+            // 
+            // toolStrip1
+            // 
+            toolStrip1.Dock = DockStyle.Fill;
+            toolStrip1.ImageScalingSize = new Size(32, 32);
+            toolStrip1.Items.AddRange(new ToolStripItem[] { HideoutButton, EncyclopediaButton, toolStripSeparator1, PMCButton, ScavButton });
+            toolStrip1.LayoutStyle = ToolStripLayoutStyle.VerticalStackWithOverflow;
+            toolStrip1.Location = new Point(0, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new Size(90, 450);
+            toolStrip1.TabIndex = 0;
+            toolStrip1.Text = "toolStrip1";
             // 
             // HideoutButton
             // 
@@ -96,18 +108,6 @@
             ScavButton.Size = new Size(88, 36);
             ScavButton.Text = "SCAV";
             // 
-            // toolStrip1
-            // 
-            toolStrip1.Dock = DockStyle.Fill;
-            toolStrip1.ImageScalingSize = new Size(32, 32);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { HideoutButton, EncyclopediaButton, toolStripSeparator1, PMCButton, ScavButton });
-            toolStrip1.LayoutStyle = ToolStripLayoutStyle.VerticalStackWithOverflow;
-            toolStrip1.Location = new Point(0, 0);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(90, 450);
-            toolStrip1.TabIndex = 0;
-            toolStrip1.Text = "toolStrip1";
-            // 
             // HideoutPanel
             // 
             HideoutPanel.Dock = DockStyle.Fill;
@@ -125,6 +125,7 @@
             Controls.Add(toolStripContainer1);
             Name = "ProfileEditorForm";
             Text = "ProfileEditorForm";
+            Load += ProfileEditorForm_Load;
             toolStripContainer1.ContentPanel.ResumeLayout(false);
             toolStripContainer1.ContentPanel.PerformLayout();
             toolStripContainer1.ResumeLayout(false);
