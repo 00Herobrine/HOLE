@@ -11,6 +11,7 @@ namespace HOLE.Scripts.Misc
         public string ModsPath { get; set; }
         public string DownloadPath { get; set; }
         public string DownloadModsPath { get; set; }
+        public string DownloadIconsPath { get; set; }
         public string BackupsPath { get; set; }
         public string PresetsPath { get; set; }
         public string IconPacksPath { get; set; }
@@ -24,6 +25,7 @@ namespace HOLE.Scripts.Misc
             ModsPath = Path.Combine(LauncherDataPath, "Mods");
             DownloadPath = Path.Combine(LauncherDataPath, "Download");
             DownloadModsPath = Path.Combine(DownloadPath, "Mods");
+            DownloadIconsPath = Path.Combine(DownloadPath, "Icons");
             BackupsPath = Path.Combine(LauncherDataPath, "Backups");
             PresetsPath = Path.Combine(LauncherDataPath, "Presets");
             IconPacksPath = Path.Combine(LauncherDataPath, "Icons");

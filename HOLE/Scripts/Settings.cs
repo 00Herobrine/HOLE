@@ -12,6 +12,7 @@ namespace HOLE.Scripts
         public static string ModsPath => LauncherSettings.ModsPath;
         public static string DownloadPath => LauncherSettings.DownloadPath;
         public static string DownloadModsPath => LauncherSettings.DownloadModsPath;
+        public static string DownloadIconsPath => LauncherSettings.DownloadIconsPath;
         public static string BackupsPath => LauncherSettings.BackupsPath;
         public static string IconPacksPath => LauncherSettings.IconPacksPath;
         public static string DefaultPackPath => Path.Combine(IconPacksPath, "Default");
@@ -19,6 +20,7 @@ namespace HOLE.Scripts
         public static IconPack SelectedIcons { get; set; } = DefaultIcons;
         public static string Language => LauncherSettings.Preset.Language;
         public static string LauncherSettingsJson => JsonSerializer.Serialize(LauncherSettings, options);
+        public static readonly string USER_AGENT = $"H.O.L.E/{FileUtils.GetProjectVersion()} (.NET Core {Environment.Version}; {Environment.OSVersion})";
 
         public static void Initialize()
         {

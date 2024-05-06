@@ -8,12 +8,10 @@ namespace HOLE.Scripts
     public static class Updater
     {
         private static readonly string GITHUB_URL = "https://api.github.com/repos/00Herobrine/HOLE/releases/latest";
-        private static readonly string USER_AGENT = $"H.O.L.E/{FileUtils.GetProjectVersion()} (.NET Core {Environment.Version}; {Environment.OSVersion})";
-
         public static async Task<bool> CheckForUpdate()
         {
             HttpClient client = new();
-            client.DefaultRequestHeaders.Add("User-Agent", USER_AGENT);
+            client.DefaultRequestHeaders.Add("User-Agent", Settings.USER_AGENT);
             try
             {
                 HttpResponseMessage response = await client.GetAsync(GITHUB_URL);

@@ -1,4 +1,5 @@
-﻿using SharpCompress.Archives;
+﻿using HOLE.Scripts.Mod_Management;
+using SharpCompress.Archives;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -47,5 +48,13 @@ namespace HOLE.Scripts.Misc
 
         public static bool IsDLL(string path) => File.Exists(path) && string.Equals(Path.GetExtension(path), ".dll", StringComparison.OrdinalIgnoreCase);
 
+        public static readonly string[] AllowedFileTypes = [".dll", ".zip", ".7z", ".rar"];
+        internal static bool IsAllowedFileType(string? v) => v != null && AllowedFileTypes.Contains(v);
+        public static FileType? GetType(string extension)
+        {
+            foreach (FileType type in Enum.GetValues(typeof(FileType)))
+                if(type.GetStringAttribute()?.Value == extension) return type;
+            return null;
+        }
     }
 }
