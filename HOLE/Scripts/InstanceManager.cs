@@ -43,9 +43,18 @@ namespace HOLE.Scripts
             InstanceChangedEvent?.Invoke(null, args);
         }
 
+        private static Dictionary<string, InstanceManagerForm> Managers = new(); // InstanceName, ManagerForm
         internal static void Open(Instance selectedInstance)
         {
-            //InstanceManagerForm
+            string InstanceName = selectedInstance.Name;
+            if (Managers.TryGetValue(InstanceName, out InstanceManagerForm? form))
+            {
+                if (form.IsDisposed)
+                    Managers[InstanceName] = new InstanceManagerForm(selectedInstance);
+                form = Managers[InstanceName];
+            }
+            else form = new InstanceManagerForm(selectedInstance);
+            form.Show();
         }
     }
 
@@ -63,6 +72,7 @@ namespace HOLE.Scripts
         public readonly string ServerPath => Path.Combine(AkiDataPath, "Server");
         public readonly string DatabasePath => Path.Combine(ServerPath, "database");
         public readonly string HideoutPath => Path.Combine(DatabasePath, "hideout");
+        public readonly string ProductionPath => Path.Combine(HideoutPath, "production.json");
         public readonly string LocalesPath => Path.Combine(DatabasePath, "locales");
         public readonly string GlobalLocaleDir => Path.Combine(LocalesPath, "global");
         public readonly string GlobalLocale => Path.Combine(GlobalLocaleDir, $"{Settings.Language}.json");

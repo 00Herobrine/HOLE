@@ -7,8 +7,8 @@ namespace HOLE
         AMMO, MAGAZINE, GRENADES, FOOD, CONTAINERS, ITEMS, KNIVES, MAPS, MEDICALS, MODS, MONEY }
     public static class TarkovCache
     {
-        public static Dictionary<string, TarkovItem> Items { get; private set; } = new();
-        public static Dictionary<string, TarkovQuest> Quests { get; private set; } = new();
+        public static Dictionary<string, TarkovItem> Items { get; private set; } = [];
+        public static Dictionary<string, TarkovQuest> Quests { get; private set; } = [];
         public static string? Directory { get; private set; }
 
         public static void Initialize() 
@@ -28,6 +28,18 @@ namespace HOLE
             Logger.Log("Initializing " + instance.GlobalLocale);
             Dictionary<string, string>? locales = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(instance.GlobalLocale));
             if (locales != null) CacheLocale(locales);
+        }
+
+        public static TarkovItem? GetItem(string id)
+        {
+            Logger.Log("Getting item for " + id);
+            Items.TryGetValue(id, out TarkovItem item);
+            return item;
+        }
+        public static TarkovQuest? GetQuest(string id)
+        {
+            Quests.TryGetValue(id, out TarkovQuest quest);
+            return quest;
         }
 
         private static void CacheLocale(Dictionary<string, string> locales)

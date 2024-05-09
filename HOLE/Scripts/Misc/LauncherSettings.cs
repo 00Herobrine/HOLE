@@ -15,6 +15,7 @@ namespace HOLE.Scripts.Misc
         public string BackupsPath { get; set; }
         public string PresetsPath { get; set; }
         public string IconPacksPath { get; set; }
+        public int BufferSize { get; set; }
         #endregion
 
         public LauncherSettings()
@@ -29,6 +30,7 @@ namespace HOLE.Scripts.Misc
             BackupsPath = Path.Combine(LauncherDataPath, "Backups");
             PresetsPath = Path.Combine(LauncherDataPath, "Presets");
             IconPacksPath = Path.Combine(LauncherDataPath, "Icons");
+            BufferSize = 8192; // 8KB
         }
     }
     public struct PresetInfo()

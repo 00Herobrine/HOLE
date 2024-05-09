@@ -4,10 +4,7 @@ using HOLE.Scripts.Misc;
 using HOLE.Scripts.Mod_Management;
 using System.Text.Json;
 using HtmlAgilityPack;
-using System.Net.Http.Headers;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace HOLE.Scripts
 {
@@ -22,9 +19,11 @@ namespace HOLE.Scripts
             $"&sortField={SortOrder.GetDisplayNameAttribute()?.Value ?? "time"}" +
             $"&sortOrder={SortOrder.GetDisplayNameAttribute()?.Value ?? "DESC"}";
         #region Base URLS
-        public const string SPT_BASE_URL = "https://hub.sp-tarkov.com/files/";
+        public const string SPT_FILES_URL = "https://hub.sp-tarkov.com/files/";
         public const string SPT_MODS_URL = "https://hub.sp-tarkov.com/mods.json";
-        public static string BASE_SPT_PAGE_URL => $"https://hub.sp-tarkov.com/files/?pageNo={SPT_PAGE_FILTERS}";
+        public const string FIKA_CLIENT_URL = "https://github.com/project-fika/Fika-Server/";
+        public const string FIKA_SERVER_URL = "https://github.com/project-fika/Fika-Plugin/";
+        public static string SPT_QUERY_URL => $"{SPT_FILES_URL}?pageNo={SPT_PAGE_FILTERS}";
         public const string BASE_GOOGLE_URL = "https://drive.google.com/";
         public const string BASE_MEDIAFIRE_URL = "https://mediafire.com";
         #endregion
@@ -32,6 +31,7 @@ namespace HOLE.Scripts
         public static readonly JsonSerializerOptions options = new() { WriteIndented = true };
         public static HttpClient? Client { get; private set; }
         public static ConcurrentQueue<ModDownload> DownloadQueue { get; private set; } = new();
+        public static ModDownload? CurrentDownload { get; private set; }
         public static async Task<HttpClient> GetCreateClient() => Client ??= await CreateClient();
         public static async Task<HttpResponseMessage> QueryPage(string URL) => await HttpUtils.QueryPage(await GetCreateClient(), URL);
         public static async Task<HttpClient> CreateClient()
@@ -55,10 +55,10 @@ namespace HOLE.Scripts
         {
             PageNumber = pageNumber;
             Client ??= await CreateClient();
-            Logger.Log($"Querying {SPT_BASE_URL}");
-            HttpResponseMessage response = await Client.GetAsync(SPT_BASE_URL);
+            Logger.Log($"Querying {SPT_QUERY_URL}");
+            HttpResponseMessage response = await Client.GetAsync(SPT_QUERY_URL);
             string body = await response.Content.ReadAsStringAsync();
-            Logger.Log($"Got response from {SPT_BASE_URL}");
+            Logger.Log($"Got response from {SPT_QUERY_URL}");
             HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(body);
             await File.WriteAllTextAsync(Path.Combine(Settings.DownloadPath, "SPTMods.html"), body);
@@ -114,7 +114,8 @@ namespace HOLE.Scripts
         #endregion
 
         #region Download
-        internal static async Task<List<ModDownload>> QueueDownloads(params string[] links) // returns the mods queued
+        public static async Task<List<ModDownload>> DownloadFikaClientServer() => await QueueAndDownload([FIKA_CLIENT_URL, FIKA_SERVER_URL]);
+        internal static async Task<List<ModDownload>> QueueAndDownload(params string[] links) // returns the mods queued
         {
             List<ModDownload> queued = [];
             foreach (string link in links)
@@ -122,55 +123,25 @@ namespace HOLE.Scripts
                 ModDownload download = new(link);
                 if (await Queue(download)) queued.Add(download);
             }
-            DownloadModsAsync(DownloadQueue);
+            DownloadModsQueueAsync(DownloadQueue);
             return queued;
         }
         private static async Task<bool> Queue(ModDownload download) // returns true if not in queue
         {
             await Task.Delay(0);
-            foreach (ModDownload queuedDownload in DownloadQueue)
+            foreach (ModDownload queuedDownload in DownloadQueue) // Checks if the download queue already has that URL
                 if (string.Equals(queuedDownload.URL, download.URL, StringComparison.OrdinalIgnoreCase)) return false;
             DownloadQueue.Enqueue(download);
             return true;
         }
-
-        public static async void DownloadModsAsync(ConcurrentQueue<ModDownload> downloadQueue)
+        public static async void DownloadModsQueueAsync(ConcurrentQueue<ModDownload> downloadQueue)
         {
+            List<ModDownload> downloaded = [];
+            int queueSize = downloadQueue.Count;
             while (!downloadQueue.IsEmpty)
-            {
                 if (downloadQueue.TryDequeue(out ModDownload modDownload))
-                {
-                    await DownloadModAsync(modDownload);
-                }
-            }
-        }
-        private static async Task<bool> DownloadModAsync(string downloadURL)
-        {
-            try
-            {
-                Logger.Log($"Attempting Mod Download for {downloadURL}");
-                HttpResponseMessage response = await QueryPage(downloadURL);
-                HttpContent content = response.Content;
-                response.EnsureSuccessStatusCode();
-                string fileName = HttpUtils.GetFileNameFromContentHeaders(content.Headers).Trim('"');
-                string fileExtension = Path.GetExtension(fileName);
-                string filePath = Path.Combine(Settings.DownloadModsPath, fileName);
-                long fileSize = content.Headers?.ContentLength ?? -1;
-                FileType? fileType = FileUtils.GetType(fileExtension);
-                if (fileType == null) return false; // Unknown/unaccepted filetype
-                ModDownload download = new(downloadURL, (FileType)fileType, fileSize);
-                FileStream stream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                Logger.Log($"Downloading {fileName}");
-                await content.CopyToAsync(stream);
-                stream.Close();
-                Logger.Log($"Downloaded to {filePath}");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.Message);
-            }
-            return false;
+                    if(await DownloadModAsync(modDownload)) downloaded.Add(modDownload);
+            MessageBox.Show($"Downloaded {downloaded.Count}/{queueSize} mods successfully!", "Queue Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         private static async Task<bool> DownloadModAsync(ModDownload download)
         {
@@ -182,8 +153,24 @@ namespace HOLE.Scripts
                 response.EnsureSuccessStatusCode();
                 string fileName = HttpUtils.GetFileNameFromContentHeaders(content.Headers).Trim('"');
                 string filePath = Path.Combine(Settings.DownloadModsPath, fileName);
-                FileStream stream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                string extension = Path.GetExtension(filePath);
+                long fileSize = content.Headers.ContentLength ?? 0;
+                download.FileName = fileName;
+                download.Type = FileUtils.GetType(extension);
                 Logger.Log($"Downloading {fileName}");
+                FileStream stream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                var contentStream = await content.ReadAsStreamAsync();
+                byte[] buffer = new byte[Settings.BufferSize];
+                int bytesRead = 0;
+                long downloadedBytes = 0;
+                download.TotalBytes = fileSize;
+                while ((bytesRead = await contentStream.ReadAsync(buffer)) > 0)
+                {
+                    await stream.WriteAsync(buffer.AsMemory(0, bytesRead));
+                    downloadedBytes += bytesRead;
+                    download.DownloadedBytes = downloadedBytes;
+                    CurrentDownload = download;
+                }
                 await content.CopyToAsync(stream);
                 stream.Close();
                 Logger.Log($"Downloaded to {filePath}");
@@ -195,12 +182,20 @@ namespace HOLE.Scripts
         }
         #endregion
     }
-    public struct ModDownload(string URL, FileType type, long TotalBytes)
+    public enum DownloadResult
+    {
+        DOWNLOADED,
+        NEWER,
+        REPLACED,
+    }
+    public struct ModDownload(string URL, FileType? type = null, long? TotalBytes = null)
     {
         public readonly string URL { get; } = URL;
         public readonly URLOrigin Origin { get; } = HttpUtils.DetermineOrigin(URL);
-        public readonly FileType Type { get; } = type;
-        public long DownloadedBytes { get; private set; }
-        public long TotalBytes { get; private set; } = TotalBytes;
+        public FileType? Type { get; internal set; } = type;
+        public string FileName { get; internal set; }
+        public long DownloadedBytes { get; internal set; }
+        public long? TotalBytes { get; internal set; } = TotalBytes;
+        public readonly float Progress => TotalBytes != 0 ? ((DownloadedBytes / TotalBytes) ?? 0) * 100 : 0;
     }
 }

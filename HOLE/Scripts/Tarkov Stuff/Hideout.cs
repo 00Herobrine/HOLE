@@ -1,5 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using HOLE.Scripts.Misc;
+using System.Numerics;
+using System.Reflection;
 
 namespace HOLE.Scripts.Tarkov_Stuff
 {
@@ -68,5 +71,33 @@ namespace HOLE.Scripts.Tarkov_Stuff
         BROKENWALL = 22,
         [Description("Gym"), Range(1, 2)]
         GYM = 23
+    }
+    public static class ModuleExtension
+    {
+        public static string GetDescription(this Enum value)
+        {
+            var type = value.GetType();
+            var field = type.GetField(value.ToString());
+            if (field == null) return "";
+            return ((DescriptionAttribute?) Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)))?.Description ?? "";
+        }
+        public static int[] GetRange(this Enum value)
+        {
+            var type = value.GetType();
+            var field = type.GetCustomAttribute<RangeAttribute>();
+            if (field == null) return [0, 0];
+            else return [(int)field.Minimum, (int)field.Maximum];
+        }
+        public static T[] GetRangeAttribute<T>(string propertyName)
+        {
+            PropertyInfo? propery = typeof(T).GetProperty(propertyName);
+            if (propery == null) throw new ArgumentException($"Property '{propertyName}' not found in type '{typeof(T)}'.");
+            RangeAttribute? attribute = propery.GetCustomAttribute<RangeAttribute>();
+            if (attribute == null) throw new InvalidOperationException($"Property '{propertyName}' does not have a RangeAttribute.");
+            T[] minMax = new T[2];
+            minMax[0] = (T) attribute.Minimum;
+            minMax[1] = (T) attribute.Maximum;
+            return minMax;
+        }
     }
 }

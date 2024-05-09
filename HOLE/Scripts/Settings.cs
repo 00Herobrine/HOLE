@@ -19,6 +19,7 @@ namespace HOLE.Scripts
         public static IconPack DefaultIcons { get; } = new IconPack(DefaultPackPath);
         public static IconPack SelectedIcons { get; set; } = DefaultIcons;
         public static string Language => LauncherSettings.Preset.Language;
+        public static int BufferSize => LauncherSettings.BufferSize;
         public static string LauncherSettingsJson => JsonSerializer.Serialize(LauncherSettings, options);
         public static readonly string USER_AGENT = $"H.O.L.E/{FileUtils.GetProjectVersion()} (.NET Core {Environment.Version}; {Environment.OSVersion})";
 

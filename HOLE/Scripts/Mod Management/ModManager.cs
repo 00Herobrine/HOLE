@@ -11,6 +11,10 @@ namespace HOLE.Scripts.Mod_Management
         public const string UserMods = "user/mods/";
         public static string? PluginsPath => InstanceManager.SelectedInstance?.PluginsPath;
         public static string? ModsPath => InstanceManager.SelectedInstance?.ModsPath;
+        public static async Task<bool> CreateJunction(string modPath, Instance instance)
+        {
+            return false;
+        }
         public static async Task ExtractMod(string filepath, Instance? instance) => await ExtractMod(filepath, instance?.Directory ?? Settings.ModsPath);
         public static async Task ExtractMod(string filepath, string extractPath)
         {
@@ -57,7 +61,6 @@ namespace HOLE.Scripts.Mod_Management
         public struct ModArchive
         {
             public readonly IArchive Archive { get; }
-            public readonly bool Subrooted { get; }
             public List<IArchiveEntry> BepInExEntries { get; set; } = [];
             public List<IArchiveEntry> UserModEntries { get; set; } = [];
 
@@ -73,27 +76,27 @@ namespace HOLE.Scripts.Mod_Management
                 {
                     string? entryPath = entry.Key;
                     if (entryPath == null) continue;
-                    bool subrooted = Directory.GetParent(entryPath) != null;
+                    bool subrooted = IsSubrooted(entry);
                     Logger.Log($"Entry subrooted? {subrooted} | {entryPath}");
-                    if(IsSubrooted(entry) && !Subrooted) Subrooted = true;
+                    //if(IsSubrooted(entry) && !Subrooted) Subrooted = true;
                     if(IsBepInExFile(entry)) BepInExEntries.Add(entry);
                     else if(IsUserModFile(entry)) UserModEntries.Add(entry);
                 }
             }
-            private bool IsSubrooted(IArchiveEntry entry)
+            private static bool IsSubrooted(IArchiveEntry entry)
             {
                 string? path = entry.Key;
                 if (path == null) return false;
-                return false;
+                return Directory.GetParent(path) != null;
             }
-            private bool IsBepInExFile(IArchiveEntry entry)
+            private static bool IsBepInExFile(IArchiveEntry entry)
             {
                 string? path = entry.Key;
                 if (path == null) return false;
                 if (Path.GetExtension(path).Equals(".dll", StringComparison.OrdinalIgnoreCase)) return true;
                 return false;
             }
-            private bool IsUserModFile(IArchiveEntry entry)
+            private static bool IsUserModFile(IArchiveEntry entry)
             {
                 string? path = entry.Key;
                 if (path == null) return false;

@@ -7,6 +7,19 @@ namespace HOLE.Scripts.Misc
 {
     public static class FileUtils
     {
+        public static string ConvertBytesToString(this long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+            const int bytesInKilobyte = 1024;
+            if (bytes == 0)
+            {
+                return "0" + suffixes[0];
+            }
+            var magnitude = Math.Abs(bytes);
+            var magnitudeIndex = (int)Math.Floor(Math.Log(magnitude, bytesInKilobyte));
+            var adjustedValue = magnitude / Math.Pow(bytesInKilobyte, magnitudeIndex);
+            return (bytes < 0 ? "-" : "") + $"{adjustedValue:0.##} {suffixes[magnitudeIndex]}";
+        }
         public static Version GetProjectVersion()
         {
             Assembly assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();

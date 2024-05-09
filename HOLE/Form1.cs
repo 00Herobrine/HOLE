@@ -34,6 +34,7 @@ namespace HOLE
             ToggleGameButtons(false);
             ToggleServerConfigButtons(false);
             Settings.Initialize();
+            RecipeManager.Initialize();
             ModManager.LoadSharedMods();
             LoadInstances();
             LoadIcons();

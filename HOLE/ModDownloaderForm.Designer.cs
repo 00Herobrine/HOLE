@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             ListViewItem listViewItem1 = new ListViewItem("Lol");
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModDownloaderForm));
             basicModsList = new ListView();
@@ -42,7 +43,7 @@
             DownloadButton = new ToolStripSplitButton();
             DownloadCurrentButton = new ToolStripMenuItem();
             DownloadInstancesButton = new ToolStripMenuItem();
-            toolStripProgressBar1 = new ToolStripProgressBar();
+            ModDownloadProgress = new ToolStripProgressBar();
             ProgressLabel = new ToolStripLabel();
             toolStrip2 = new ToolStrip();
             toolStripLabel1 = new ToolStripLabel();
@@ -59,6 +60,7 @@
             panel2 = new Panel();
             panel3 = new Panel();
             ModsList = new ListView();
+            DownloadProgressTimer = new System.Windows.Forms.Timer(components);
             toolStrip1.SuspendLayout();
             toolStrip2.SuspendLayout();
             panel1.SuspendLayout();
@@ -128,7 +130,7 @@
             // toolStrip1
             // 
             toolStrip1.Dock = DockStyle.Bottom;
-            toolStrip1.Items.AddRange(new ToolStripItem[] { DownloadButton, toolStripProgressBar1, ProgressLabel });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { DownloadButton, ModDownloadProgress, ProgressLabel });
             toolStrip1.Location = new Point(0, 425);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(899, 25);
@@ -148,20 +150,20 @@
             // DownloadCurrentButton
             // 
             DownloadCurrentButton.Name = "DownloadCurrentButton";
-            DownloadCurrentButton.Size = new Size(180, 22);
+            DownloadCurrentButton.Size = new Size(161, 22);
             DownloadCurrentButton.Text = "Current Instance";
             // 
             // DownloadInstancesButton
             // 
             DownloadInstancesButton.Name = "DownloadInstancesButton";
-            DownloadInstancesButton.Size = new Size(180, 22);
+            DownloadInstancesButton.Size = new Size(161, 22);
             DownloadInstancesButton.Text = "Instances";
             // 
-            // toolStripProgressBar1
+            // ModDownloadProgress
             // 
-            toolStripProgressBar1.Alignment = ToolStripItemAlignment.Right;
-            toolStripProgressBar1.Name = "toolStripProgressBar1";
-            toolStripProgressBar1.Size = new Size(250, 22);
+            ModDownloadProgress.Alignment = ToolStripItemAlignment.Right;
+            ModDownloadProgress.Name = "ModDownloadProgress";
+            ModDownloadProgress.Size = new Size(250, 22);
             // 
             // ProgressLabel
             // 
@@ -283,6 +285,10 @@
             ModsList.UseCompatibleStateImageBehavior = false;
             ModsList.View = View.SmallIcon;
             // 
+            // DownloadProgressTimer
+            // 
+            DownloadProgressTimer.Tick += DownloadProgressTimer_Tick;
+            // 
             // ModDownloaderForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -311,7 +317,7 @@
         private ToolStripSplitButton DownloadButton;
         private ToolStripMenuItem DownloadInstancesButton;
         private ToolStripMenuItem DownloadCurrentButton;
-        private ToolStripProgressBar toolStripProgressBar1;
+        private ToolStripProgressBar ModDownloadProgress;
         private ToolStripLabel ProgressLabel;
         private ToolStrip toolStrip2;
         private Panel panel1;
@@ -336,5 +342,6 @@
         private ListView ModsList;
         private Panel panel3;
         private ColumnHeader AkiVersion;
+        private System.Windows.Forms.Timer DownloadProgressTimer;
     }
 }
