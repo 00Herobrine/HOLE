@@ -83,7 +83,7 @@ namespace HOLE.Scripts
         public readonly string RequirementID => TemplateId ?? QuestId ?? $"{(int?)AreaType}";
         public override string ToString()
         {
-            return TarkovCache.GetItem(TemplateId ?? "")?.Name ?? TarkovCache.GetQuest(QuestId ?? "")?.name ?? AreaType?.GetDescription() ?? Type;
+            return TarkovCache.GetItem(TemplateId ?? "")?.Name ?? TarkovCache.GetQuest(QuestId ?? "")?.Name ?? AreaType?.GetDescription() ?? Type;
         }
     }
 }

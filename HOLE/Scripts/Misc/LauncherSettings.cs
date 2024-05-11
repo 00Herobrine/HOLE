@@ -15,6 +15,9 @@ namespace HOLE.Scripts.Misc
         public string BackupsPath { get; set; }
         public string PresetsPath { get; set; }
         public string IconPacksPath { get; set; }
+        public string ServerIP { get; set; }
+        public string ServerPort { get; set; }
+        public string ServerURL => $"{ServerIP}:{ServerPort}";
         public int BufferSize { get; set; }
         #endregion
 
@@ -30,6 +33,8 @@ namespace HOLE.Scripts.Misc
             BackupsPath = Path.Combine(LauncherDataPath, "Backups");
             PresetsPath = Path.Combine(LauncherDataPath, "Presets");
             IconPacksPath = Path.Combine(LauncherDataPath, "Icons");
+            ServerIP = "127.0.0.1";
+            ServerPort = "6969";
             BufferSize = 8192; // 8KB
         }
     }

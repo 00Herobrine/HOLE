@@ -120,7 +120,7 @@ namespace HOLE.Scripts.Mod_Management
             name = dataNode.SelectSingleNode(".//h3[@class='filebaseFileSubject']").InnerText.Trim();
             description = dataNode.SelectSingleNode(".//div[@class='containerContent filebaseFileTeaser']").InnerText.Trim();
             featured = iconNode.SelectSingleNode(".//span[starts-with(@class, 'badge label') and contains(@class, 'jsLabelFeatured')]").InnerText.Trim();
-            //Downloads = int.Parse(fileStats[0].InnerText.Replace("Download", "").Replace("s", "").Trim());
+            downloads = fileStats[0].InnerText.Replace("Download", "").Replace("s", "").Trim();
             link = box.Attributes["href"].Value;
             ModID = int.Parse(link.Split("files/file/")[1].Split("-")[0]);
             versionLabel = labelList[0].InnerText.Replace("SPT-AKI", "").Trim(); // AkiVersion

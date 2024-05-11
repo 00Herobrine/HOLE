@@ -31,7 +31,6 @@ namespace HOLE.Scripts
             if (settings != null)
             {
                 SetLauncherSettings(settings);
-                Logger.Log($"Setting launcher settings \n{config}");
                 Initialize(settings);
             }
             else Logger.Log("Settings == null");
@@ -39,7 +38,6 @@ namespace HOLE.Scripts
         private static void Initialize(LauncherSettings settings)
         {
             PathCheck(settings.LauncherDataPath, settings.InstancesPath, settings.ModsPath, settings.BackupsPath, settings.PresetsPath, settings.IconPacksPath, DefaultPackPath);
-            Logger.Log($"Set LauncherSettings to {settings.Preset.Name}");
         }
 
 
@@ -47,6 +45,7 @@ namespace HOLE.Scripts
         private static void SetLauncherSettings(LauncherSettings settings)
         {
             LauncherSettings = settings;
+            Logger.Log($"Set Launcher settings to '{settings.Preset.Name}'\n{settings}");
         }
 
         public static void SaveLauncherSettings()

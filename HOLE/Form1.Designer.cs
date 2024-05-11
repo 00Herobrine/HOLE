@@ -41,7 +41,8 @@
             toolStrip1 = new ToolStrip();
             InstanceLogoButton = new ToolStripButton();
             toolStripSeparator3 = new ToolStripSeparator();
-            toolStripLabel1 = new ToolStripLabel();
+            AkiVersionLabel = new ToolStripLabel();
+            AkiStatusLabel = new ToolStripLabel();
             StartAKIButton = new ToolStripButton();
             KillAKIButton = new ToolStripButton();
             toolStripSeparator2 = new ToolStripSeparator();
@@ -55,6 +56,7 @@
             CopyInstanceButton = new ToolStripButton();
             DeleteInstanceButton = new ToolStripButton();
             toolStrip2 = new ToolStrip();
+            ProfileButton = new ToolStripSplitButton();
             AddInstanceButton = new ToolStripSplitButton();
             AddNewInstanceButton = new ToolStripMenuItem();
             AddExistingInstanceButton = new ToolStripMenuItem();
@@ -70,7 +72,6 @@
             SettingsButton = new ToolStripButton();
             HelpButton = new ToolStripSplitButton();
             UpdateButton = new ToolStripButton();
-            PlayerButton = new ToolStripButton();
             panel1.SuspendLayout();
             toolStripContainer2.TopToolStripPanel.SuspendLayout();
             toolStripContainer2.SuspendLayout();
@@ -131,8 +132,8 @@
             // 
             LastPlayedLabel.ForeColor = SystemColors.HighlightText;
             LastPlayedLabel.Name = "LastPlayedLabel";
-            LastPlayedLabel.Size = new Size(415, 22);
-            LastPlayedLabel.Text = "Last Played on 4/20/69 9:11 AM for 1hr 42m 32s, Total Played: 1d 4hr 32ms 16s";
+            LastPlayedLabel.Size = new Size(508, 22);
+            LastPlayedLabel.Text = "Last Played '{InstanceName}' on 4/20/69 9:11 AM for 1hr 42m 32s, Total Played: 1d 4hr 32ms 16s";
             // 
             // TotalPlayTimeLabel
             // 
@@ -203,7 +204,7 @@
             // 
             toolStrip1.BackColor = Color.Gray;
             toolStrip1.Dock = DockStyle.None;
-            toolStrip1.Items.AddRange(new ToolStripItem[] { InstanceLogoButton, toolStripSeparator3, toolStripLabel1, StartAKIButton, KillAKIButton, toolStripSeparator2, toolStripLabel2, PlayButton, KillGameButton, toolStripSeparator1, EditInstanceButton, InstanceFolderButton, toolStripSplitButton4, CopyInstanceButton, DeleteInstanceButton });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { InstanceLogoButton, toolStripSeparator3, AkiVersionLabel, AkiStatusLabel, StartAKIButton, KillAKIButton, toolStripSeparator2, toolStripLabel2, PlayButton, KillGameButton, toolStripSeparator1, EditInstanceButton, InstanceFolderButton, toolStripSplitButton4, CopyInstanceButton, DeleteInstanceButton });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Padding = new Padding(5, 0, 5, 0);
@@ -225,13 +226,22 @@
             toolStripSeparator3.Name = "toolStripSeparator3";
             toolStripSeparator3.Size = new Size(79, 6);
             // 
-            // toolStripLabel1
+            // AkiVersionLabel
             // 
-            toolStripLabel1.Font = new Font("Arial", 9F);
-            toolStripLabel1.ForeColor = SystemColors.HighlightText;
-            toolStripLabel1.Name = "toolStripLabel1";
-            toolStripLabel1.Size = new Size(79, 15);
-            toolStripLabel1.Text = "AKI-3.6.1";
+            AkiVersionLabel.Font = new Font("Arial", 9F);
+            AkiVersionLabel.ForeColor = SystemColors.HighlightText;
+            AkiVersionLabel.Name = "AkiVersionLabel";
+            AkiVersionLabel.Size = new Size(79, 15);
+            AkiVersionLabel.Text = "AKI-3.6.1";
+            // 
+            // AkiStatusLabel
+            // 
+            AkiStatusLabel.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            AkiStatusLabel.Font = new Font("Arial", 9F);
+            AkiStatusLabel.ForeColor = SystemColors.HighlightText;
+            AkiStatusLabel.Name = "AkiStatusLabel";
+            AkiStatusLabel.Size = new Size(79, 15);
+            AkiStatusLabel.Text = "OFFLINE";
             // 
             // StartAKIButton
             // 
@@ -351,7 +361,7 @@
             // 
             toolStrip2.BackColor = Color.Gray;
             toolStrip2.Dock = DockStyle.None;
-            toolStrip2.Items.AddRange(new ToolStripItem[] { AddInstanceButton, FoldersButton, SettingsButton, HelpButton, UpdateButton, PlayerButton });
+            toolStrip2.Items.AddRange(new ToolStripItem[] { ProfileButton, AddInstanceButton, FoldersButton, SettingsButton, HelpButton, UpdateButton });
             toolStrip2.Location = new Point(0, 0);
             toolStrip2.Name = "toolStrip2";
             toolStrip2.Padding = new Padding(0, 3, 1, 3);
@@ -359,6 +369,17 @@
             toolStrip2.Stretch = true;
             toolStrip2.TabIndex = 4;
             toolStrip2.Text = "toolStrip2";
+            // 
+            // ProfileButton
+            // 
+            ProfileButton.Alignment = ToolStripItemAlignment.Right;
+            ProfileButton.Font = new Font("Arial", 9F);
+            ProfileButton.ForeColor = SystemColors.HighlightText;
+            ProfileButton.Image = (Image)resources.GetObject("ProfileButton.Image");
+            ProfileButton.ImageTransparentColor = Color.Magenta;
+            ProfileButton.Name = "ProfileButton";
+            ProfileButton.Size = new Size(111, 20);
+            ProfileButton.Text = "Profile Name";
             // 
             // AddInstanceButton
             // 
@@ -482,17 +503,6 @@
             UpdateButton.Text = "Update";
             UpdateButton.Click += UpdateButton_Click;
             // 
-            // PlayerButton
-            // 
-            PlayerButton.Alignment = ToolStripItemAlignment.Right;
-            PlayerButton.Font = new Font("Arial", 9F);
-            PlayerButton.ForeColor = SystemColors.HighlightText;
-            PlayerButton.Image = (Image)resources.GetObject("PlayerButton.Image");
-            PlayerButton.ImageTransparentColor = Color.Magenta;
-            PlayerButton.Name = "PlayerButton";
-            PlayerButton.Size = new Size(98, 20);
-            PlayerButton.Text = "Player Name";
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -539,7 +549,7 @@
         private ToolStrip toolStrip1;
         private ToolStripButton InstanceLogoButton;
         private ToolStripSeparator toolStripSeparator3;
-        private ToolStripLabel toolStripLabel1;
+        private ToolStripLabel AkiStatusLabel;
         private ToolStripButton StartAKIButton;
         private ToolStripButton KillAKIButton;
         private ToolStripSeparator toolStripSeparator2;
@@ -568,7 +578,6 @@
         private ToolStripButton SettingsButton;
         private ToolStripSplitButton HelpButton;
         private ToolStripButton UpdateButton;
-        private ToolStripButton PlayerButton;
         private ToolStrip toolStrip3;
         private ToolStripLabel toolStripLabel3;
         private ListView InstanceView;
@@ -576,5 +585,7 @@
         private ToolStrip toolStrip4;
         private ToolStripLabel LastPlayedLabel;
         private ToolStripLabel TotalPlayTimeLabel;
+        private ToolStripSplitButton ProfileButton;
+        private ToolStripLabel AkiVersionLabel;
     }
 }

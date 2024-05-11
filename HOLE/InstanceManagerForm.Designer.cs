@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InstanceManagerForm));
-            ListViewItem listViewItem3 = new ListViewItem(new string[] { "662bd45200012640ea93c910", "Hero", "Edge of Darkness", "42", "13", "3.8.0 (29197)" }, -1);
+            ListViewItem listViewItem2 = new ListViewItem(new string[] { "662bd45200012640ea93c910", "Hero", "Edge of Darkness", "42", "13", "3.8.0 (29197)" }, -1);
             toolStrip1 = new ToolStrip();
             ServerButton = new ToolStripButton();
             toolStripButton3 = new ToolStripButton();
@@ -431,7 +431,7 @@
             ProductionResult.FormattingEnabled = true;
             ProductionResult.Location = new Point(269, 22);
             ProductionResult.Name = "ProductionResult";
-            ProductionResult.Size = new Size(156, 23);
+            ProductionResult.Size = new Size(180, 23);
             ProductionResult.TabIndex = 7;
             // 
             // label3
@@ -636,7 +636,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(161, 91);
+            label1.Location = new Point(159, 74);
             label1.Name = "label1";
             label1.Size = new Size(21, 15);
             label1.TabIndex = 5;
@@ -646,9 +646,9 @@
             // RequirementID
             // 
             RequirementID.FormattingEnabled = true;
-            RequirementID.Location = new Point(188, 88);
+            RequirementID.Location = new Point(161, 91);
             RequirementID.Name = "RequirementID";
-            RequirementID.Size = new Size(133, 23);
+            RequirementID.Size = new Size(180, 23);
             RequirementID.TabIndex = 4;
             // 
             // ProductionList
@@ -780,7 +780,7 @@
             // 
             listView1.Columns.AddRange(new ColumnHeader[] { ID, Edition, PMCLevel, ScavLevel, AKIVersion });
             listView1.Dock = DockStyle.Fill;
-            listView1.Items.AddRange(new ListViewItem[] { listViewItem3 });
+            listView1.Items.AddRange(new ListViewItem[] { listViewItem2 });
             listView1.Location = new Point(3, 3);
             listView1.Name = "listView1";
             listView1.Size = new Size(700, 416);

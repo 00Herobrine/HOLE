@@ -1,8 +1,10 @@
+using Aki.Launcher;
+using Aki.Launcher.Models.Aki;
 using HOLE.Scripts;
 using HOLE.Scripts.Misc;
 using HOLE.Scripts.Mod_Management;
 using System.Diagnostics;
-using System.Text;
+using Settings = HOLE.Scripts.Settings;
 
 namespace HOLE
 {
@@ -11,8 +13,7 @@ namespace HOLE
         public ToolStripItem[] ActiveAkiComponents { get; }
         public ToolStripItem[] ActiveGameComponents { get; }
         public ToolStripItem[] ActiveInstanceComponents { get; }
-        public static Process? AkiProcess { get; private set; }
-        public static Process? TarkovProcess { get; private set; }
+        public static Dictionary<int, string> TarkovProcess { get; private set; } = []; // ProcessID, instanceName
         public Form1()
         {
             InitializeComponent();
@@ -21,10 +22,10 @@ namespace HOLE
             ActiveInstanceComponents = [ModsFolderButton, InstanceFolder, InstanceFolderButton, EditInstanceButton, CopyInstanceButton, DeleteInstanceButton];
         }
 
-        private async void Form1_Load(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
             Initialize();
-            await DetectAki();
+            AkiManager.DetectAki();
         }
 
         private void Initialize()
@@ -33,16 +34,38 @@ namespace HOLE
             KillAKIButton.Enabled = false;
             ToggleGameButtons(false);
             ToggleServerConfigButtons(false);
+            ToggleInstanceButtons(null);
             Settings.Initialize();
             RecipeManager.Initialize();
             ModManager.LoadSharedMods();
+            LoadServerAsync();
             LoadInstances();
             LoadIcons();
+            LoadPlayTime();
+        }
+
+        private void LoadPlayTime()
+        {
+            //Settings.ConfigPath
         }
 
         private void SubToEvents()
         {
-            InstanceManager.InstanceChangedEvent += LoadInstance;
+            InstanceManager.InstanceChangedEvent += SelectInstance;
+            AkiManager.AkiStartedEvent += AkiStarted;
+            AkiManager.AkiStoppedEvent += AkiExited;
+        }
+
+        private void AkiExited(Instance instance)
+        {
+            ToggleGameButtons(false);
+            ToggleServerConfigButtons(true);
+        }
+
+        private void AkiStarted(Instance instance)
+        {
+            ToggleServerConfigButtons(false);
+            ToggleGameButtons(true);
         }
 
         #region UI
@@ -50,7 +73,7 @@ namespace HOLE
         {
             IconPack icons = Settings.SelectedIcons;
             AddInstanceButton.Image = icons.Launcher.AddInstanceButton.Image;
-            PlayerButton.Image = icons.Factions.BEAR.Image;
+            ProfileButton.Image = icons.Factions.BEAR.Image;
         }
         private void IconsFolderButton_Click(object sender, EventArgs e)
         {
@@ -87,6 +110,10 @@ namespace HOLE
         {
             FileUtils.OpenExplorer(Settings.LauncherPath);
         }
+        private async Task ToggleStripItemsAsync(bool state, params ToolStripItem[] components)
+        {
+            await Task.Run(() => { ToggleStripItems(state, components); return Task.CompletedTask; });
+        }
         private void ToggleStripItems(bool state, params ToolStripItem[] components)
         {
             foreach (ToolStripItem item in components)
@@ -98,105 +125,25 @@ namespace HOLE
         #endregion
 
         #region Aki Functions
-        public static async Task<bool> IsAkiRunning()
-        {
-            try
-            {
-                await Task.Delay(0);
-                return Process.GetProcessesByName("aki.server").Length > 0; ;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.ToString());
-                return false;
-            }
-        }
-        private async Task DetectAki()
-        {
-            bool isRunning = await IsAkiRunning();
-            if (isRunning)
-            {
-                await Task.Run(() => MessageBox.Show("Active Aki detected", "AKI Detected!"));
-                KillAKIButton.Enabled = true;
-                ToggleGameButtons(true);
-                // Disallow editing server values while live as they won't save
-                ToggleServerConfigButtons(false);
-            }
-            else
-            {
-                ToggleGameButtons(false);
-                KillAKIButton.Enabled = false;
-            }
-        }
-        public async Task<bool> StartAki(Instance instance)
-        {
-            await Task.Delay(0);
-            Process akiProcess = new();
-            akiProcess.StartInfo.WorkingDirectory = instance.Directory;
-            akiProcess.StartInfo.FileName = "aki.server.exe";
-            akiProcess.StartInfo.CreateNoWindow = true;
-            akiProcess.StartInfo.UseShellExecute = false;
-            akiProcess.StartInfo.RedirectStandardOutput = true;
-            akiProcess.StartInfo.StandardOutputEncoding = Encoding.UTF8;
-            akiProcess.OutputDataReceived += ProcessAkiConsoleOutput;
-            akiProcess.Exited += AkiExited;
-            try
-            {
-                akiProcess.Start();
-                akiProcess.BeginOutputReadLine();
-                AkiProcess = akiProcess;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.Message);
-            }
-            return false;
-        }
-
-        private void AkiExited(object? sender, EventArgs e)
-        {
-            AkiProcess = null;
-            ToggleGameButtons(false);
-            ToggleServerConfigButtons(true);
-        }
-
-        private static void ProcessAkiConsoleOutput(object sender, DataReceivedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void OnAkiActive()
-        {
-            ToggleServerConfigButtons(false);
-            ToggleGameButtons(true);
-        }
-
-        private async Task KillAki()
-        {
-            bool isRunning = await IsAkiRunning();
-            if (!isRunning) return;
-            Process[] akiProcesses = Process.GetProcessesByName("aki.server");
-            foreach (Process aki in akiProcesses)
-            {
-                aki.Kill();
-                Logger.Log($"Killed {aki.ProcessName} ({aki.Id})");
-            }
-        }
         #region UI
         private void ToggleServerConfigButtons(bool enabled)
         {
 
         }
         #endregion
-        private async void KillAKIButton_Click(object sender, EventArgs e)
+        private void KillAKIButton_Click(object sender, EventArgs e)
         {
-            await KillAki();
+            AkiManager.KillAki();
         }
 
-        private void StartAKIButton_Click(object sender, EventArgs e)
+        private async void StartAKIButton_Click(object sender, EventArgs e)
         {
-            //StartAndBindAki();
+            Instance? instance = InstanceManager.SelectedInstance;
+            if(instance == null) return;
+            await AkiManager.StartAkiAsync((Instance)instance);
+            //await Task.Delay(250);
+            //DetectAki(false);
+            await LoadServerAsync();
         }
         #endregion
 
@@ -204,67 +151,65 @@ namespace HOLE
         private async void ToggleGameButtons(bool enabled)
         {
             PlayButton.Enabled = enabled && InstanceManager.SelectedInstance != null;
-            KillGameButton.Enabled = enabled && await IsTarkovRunning();
+            KillGameButton.Enabled = enabled && await GameManager.IsTarkovRunning();
         }
         private void PlayButton_Click(object sender, EventArgs e)
         {
-            StartTarkov();
-        }
-        public async static void StartTarkov()
-        {
-            bool tarkovRunning = await IsTarkovRunning();
-            if (tarkovRunning)
-                if (MessageBox.Show("Another Tarkov instance has been found running.\nWould you like to Continue?", "Tarkov Active!", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
-                {
+            //ServerProfileInfo profiles = GetServerProfiles();
+            Instance? instance = InstanceManager.SelectedInstance;
+            //Profile? selectedProfile = InstanceManager.SelectedInstance;
+            //if (instance == null || selectedProfile == null) return;
+            //StartTarkov((Instance)instance,(Profile)selectedProfile);
 
-                }
         }
+        private void GameExited(object? sender, EventArgs e)
+        {
+            CheckGameButtons();
+        }
+
         private async void KillGameButton_Click(object sender, EventArgs e)
         {
-            await KillTarkov();
-        }
-        public static async Task KillTarkov() // The true killer was themselves.
-        {
-            bool isRunning = await IsTarkovRunning();
-            if (!isRunning) return;
-            Process[] tarkovProcesses = Process.GetProcessesByName("escapefromtarkov");
-            foreach (Process tarkov in tarkovProcesses)
-            {
-                tarkov.Kill();
-                Logger.Log($"Killed {tarkov.ProcessName} ({tarkov.Id}");
-            }
-        }
-        public static async Task<bool> IsTarkovRunning()
-        {
-            try
-            {
-                await Task.Delay(0);
-                return Process.GetProcessesByName("escapefromtarkov").Length > 0;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.ToString());
-                return false;
-            }
+            await GameManager.KillTarkov();
         }
         #endregion
 
         #region Instance
         #region Functions
-        private void LoadInstance(object? sender, InstanceEventArgs e)
+        private async Task LoadServerAsync()
         {
-            ToggleInstanceButtons(e.Instance);
+            await ServerManager.LoadDefaultServerAsync(Settings.LauncherSettings.ServerURL);
+            Logger.Log("Connected to Server " + ServerManager.SelectedServer?.backendUrl ?? "NotSetup");
+            //await ServerManager.PingServer();
+        }
+        private async void SelectInstance(object? sender, InstanceEventArgs e)
+        {
+            //await Task.Delay(0);
+            
+            Instance? instance = e.Instance;
+            ToggleInstanceButtons(instance);
             CheckGameButtons();
-            PlayerButton.Text = e.Instance?.Name ?? "";
+            ProfileButton.Text = e.Instance?.Name ?? "";
+            if (instance == null) return;
+            bool response = ServerManager.PingServer();
+            if (!response) return; // Aki Dead
+            ServerProfileInfo[] profiles = await GetProfilesAsync();
+            ProfileButton.DropDownItems.Clear();
+            foreach (ServerProfileInfo profile in profiles)
+                 ProfileButton.DropDownItems.Add(profile.username);
+        }
+        private async Task<ServerProfileInfo[]> GetProfilesAsync()
+        {
+            await Task.Delay(0);
+            return AccountManager.GetExistingProfiles();
         }
         private async void CheckGameButtons()
         {
             CheckAkiButtons();
-            ToggleStripItems(await IsTarkovRunning(), ActiveGameComponents);
+            ToggleStripItems(await GameManager.IsTarkovRunning(), ActiveGameComponents);
         }
         private async void CheckAkiButtons()
         {
-            ToggleStripItems(await IsAkiRunning(), ActiveAkiComponents);
+            ToggleStripItems(await AkiManager.IsAkiRunningAsync(), ActiveAkiComponents);
         }
         private void LoadInstances()
         {
@@ -282,17 +227,15 @@ namespace HOLE
         }
         private async void ToggleInstanceButtons(Instance? instance)
         {
-            await Task.Delay(0);
-            ToggleStripItems(instance != null, ActiveInstanceComponents);
+            await ToggleStripItemsAsync(instance != null, ActiveInstanceComponents);
         }
         #endregion
 
         #region UI
         private void InstanceView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Instance? selectedInstance = null;
-            if (InstanceView.SelectedItems.Count == 1) selectedInstance = InstanceManager.Get(InstanceView.SelectedItems[0].Text);
-            InstanceManager.SetSelected(selectedInstance);
+            if (InstanceView.SelectedItems.Count == 1) 
+                InstanceManager.SetSelected(InstanceManager.Get(InstanceView.SelectedItems[0].Text));
         }
         private void AddInstanceButton_ButtonClick(object sender, EventArgs e)
         {
@@ -343,6 +286,11 @@ namespace HOLE
         private void FoldersButton_ButtonClick(object sender, EventArgs e)
         {
 
+        }
+
+        private void ProfileButton_DefaultItemChanged(object sender, EventArgs e)
+        {
+            Logger.Log("Changed Default");
         }
     }
 }

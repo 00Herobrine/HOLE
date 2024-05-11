@@ -1,5 +1,6 @@
 ﻿using HOLE.Scripts;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace HOLE
 {
@@ -93,25 +94,25 @@ namespace HOLE
             switch (category)
             {
                 case "name":
-                    quest.name = value;
+                    quest.Name = value;
                     break;
                 case "description":
-                    quest.description = value;
+                    quest.Description = value;
                     break;
                 case "failMessageText":
-                    quest.failMessageText = value;
+                    quest.FailMessageText = value;
                     break;
                 case "successMessageText":
-                    quest.successMessageText = value;
+                    quest.SuccessMessageText = value;
                     break;
                 case "acceptPlayerMessage":
-                    quest.acceptMessageText = value;
+                    quest.AcceptMessageText = value;
                     break;
                 case "declinePlayerMessage":
-                    quest.declineMessageText = value;
+                    quest.DeclineMessageText = value;
                     break;
                 case "completePlayerMessage":
-                    quest.completeMessageText = value;
+                    quest.CompleteMessageText = value;
                     break;
             }
             Quests[id] = quest;
@@ -129,12 +130,12 @@ namespace HOLE
     public struct TarkovQuest(string ID)
     {
         public readonly string ID { get; } = ID;
-        public string name { get; set; }
-        public string description { get; set; }
-        public string failMessageText { get; set; }
-        public string successMessageText { get; set; }
-        public string acceptMessageText { get; set; }
-        public string declineMessageText { get; set; }
-        public string completeMessageText { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string FailMessageText { get; set; }
+        public string SuccessMessageText { get; set; }
+        public string AcceptMessageText { get; set; }
+        public string DeclineMessageText { get; set; }
+        public string CompleteMessageText { get; set; }
     }
 }

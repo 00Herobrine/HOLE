@@ -1,6 +1,7 @@
 ﻿using HOLE.Scripts;
 using HOLE.Scripts.Misc;
 using HOLE.Scripts.Tarkov_Stuff;
+using System.ComponentModel;
 
 namespace HOLE
 {
@@ -27,16 +28,36 @@ namespace HOLE
 
         private void InstanceEditorForm_Load(object sender, EventArgs e)
         {
-            LoadVariables();
+            LoadDataSources();
             LoadProduction();
         }
 
-        private async void LoadVariables()
+        private async void LoadDataSources()
         {
             await Task.Delay(0);
             ProductionModule.Items.Clear();
             RequirementTypeBox.Items.Clear();
+            ProductionModule.DataSource = Enum.GetValues(typeof(Module))
+            .Cast<Module>()
+            .Select(enumValue =>
+            {
+                return new
+                {
+                    Value = enumValue,
+                    Description = enumValue.GetType()?
+                    .GetField(enumValue.ToString())?
+                    .GetCustomAttributes(typeof(DescriptionAttribute), false)
+                    .FirstOrDefault() is DescriptionAttribute descriptionAttribute ? descriptionAttribute.Description : enumValue.ToString()
+                };
+            })
+            .ToList();
+            ProductionModule.DisplayMember = "Description";
+            ProductionModule.ValueMember = "Value";
+            RequirementTypeBox.DataSource = Enum.GetValues(typeof(RequirementType));
+            ProductionResult.DataSource = TarkovCache.Items.Values.ToArray();
+            ProductionResult.DisplayMember = "Name";
         }
+        
 
         private async void LoadProduction()
         {
