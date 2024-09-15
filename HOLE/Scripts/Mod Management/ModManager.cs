@@ -11,11 +11,11 @@ namespace HOLE.Scripts.Mod_Management
         public const string UserMods = "user/mods/";
         public static string? PluginsPath => InstanceManager.SelectedInstance?.PluginsPath;
         public static string? ModsPath => InstanceManager.SelectedInstance?.ModsPath;
-        public static async Task<bool> CreateJunction(string modPath, Instance instance)
+        public static async Task<bool> CreateJunction(string modPath, AkiInstance instance)
         {
             return false;
         }
-        public static async Task ExtractMod(string filepath, Instance? instance) => await ExtractMod(filepath, instance?.Directory ?? Settings.ModsPath);
+        public static async Task ExtractMod(string filepath, AkiInstance? instance) => await ExtractMod(filepath, instance?.Directory ?? Settings.ModsPath);
         public static async Task ExtractMod(string filepath, string extractPath)
         {
             await Task.Delay(0);
@@ -57,6 +57,10 @@ namespace HOLE.Scripts.Mod_Management
             {
                 Logger.Log(ex.Message);
             }
+        }
+        public static bool HasUpdate(ModConfig config)
+        {
+
         }
         public struct ModArchive
         {

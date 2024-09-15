@@ -103,7 +103,7 @@ namespace HOLE.Scripts
             Logger.Log($"Got repsonse!\n{body}");
             BasicModsConfig modData = JsonSerializer.Deserialize<BasicModsConfig>(body);
             SaveBasicModsConfig(modData);
-            Logger.Log($"Queried {modData.mod_data.Length} BasicMods");
+            Logger.Log($"Queried {modData.Mods.Length} BasicMods");
             return modData;
         }
         private static async void SaveBasicModsConfig(BasicModsConfig modsConfig)

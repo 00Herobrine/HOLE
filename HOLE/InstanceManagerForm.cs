@@ -15,12 +15,12 @@ namespace HOLE
     }
     public partial class InstanceManagerForm : Form
     {
-        public readonly Instance Instance;
+        public readonly AkiInstance Instance;
         public InstanceManagerForm()
         {
             InitializeComponent();
         }
-        public InstanceManagerForm(Instance instance)
+        public InstanceManagerForm(AkiInstance instance)
         {
             Instance = instance;
             InitializeComponent();

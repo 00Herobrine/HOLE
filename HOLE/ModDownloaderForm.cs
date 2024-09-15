@@ -7,7 +7,7 @@ namespace HOLE
 {
     public partial class ModDownloaderForm : Form
     {
-        public Instance? Instance { get; }
+        public AkiInstance? Instance { get; }
 
         public const string ForbiddenInstanceName = "ANameThatShouldntBeUsed";
         public ModDownloaderForm()
@@ -15,7 +15,7 @@ namespace HOLE
             InitializeComponent();
             Instance = null;
         }
-        public ModDownloaderForm(Instance? instance)
+        public ModDownloaderForm(AkiInstance? instance)
         {
             InitializeComponent();
             Instance = instance;
@@ -80,13 +80,13 @@ namespace HOLE
             else
             {
                 BasicModsConfig config = JsonSerializer.Deserialize<BasicModsConfig>(await File.ReadAllTextAsync(ModDownloader.ModsJsonPath));
-                if ((DateTime.Now - config.last_updated) > TimeSpan.FromMinutes(ModDownloader.ExpirationTime)) QueryAndAddBasicMods();
-                else Populate(ref basicModsList, config.mod_data);
+                if ((DateTime.Now - config.LastUpdated) > TimeSpan.FromMinutes(ModDownloader.ExpirationTime)) QueryAndAddBasicMods();
+                else Populate(ref basicModsList, config.Mods);
             }
         }
         private async void QueryAndAddBasicMods()
         {
-            BasicModCard[] modCards = (await ModDownloader.QueryBasicModDownloads()).mod_data;
+            BasicModCard[] modCards = (await ModDownloader.QueryBasicModDownloads()).Mods;
             Populate(ref basicModsList, modCards);
         }
         private static void Populate(ref ListView listView, params BasicModCard[] basicModCards)

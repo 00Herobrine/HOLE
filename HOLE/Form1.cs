@@ -1,6 +1,8 @@
-using Aki.Launcher;
 using Aki.Launcher.Models.Aki;
+using HOLE.Aki.Launcher.Base.Models.Models.Aki;
 using HOLE.Scripts;
+using HOLE.Scripts.Aki;
+using HOLE.Scripts.Launcher;
 using HOLE.Scripts.Misc;
 using HOLE.Scripts.Mod_Management;
 using System.Diagnostics;
@@ -13,7 +15,6 @@ namespace HOLE
         public ToolStripItem[] ActiveAkiComponents { get; }
         public ToolStripItem[] ActiveGameComponents { get; }
         public ToolStripItem[] ActiveInstanceComponents { get; }
-        public static Dictionary<int, string> TarkovProcess { get; private set; } = []; // ProcessID, instanceName
         public Form1()
         {
             InitializeComponent();
@@ -25,7 +26,14 @@ namespace HOLE
         private void Form1_Load(object sender, EventArgs e)
         {
             Initialize();
-            AkiManager.DetectAki();
+            DetectActiveAki();
+        }
+
+        private static async void DetectActiveAki()
+        {
+            if ((await AkiManager.GetProcessesAsync()).Length == 0) return;
+            if (MessageBox.Show("Active Aki Detected would you like to Kill it?", "Aki Detected!",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1) == DialogResult.Yes) AkiManager.KillActiveAkis();
         }
 
         private void Initialize()
@@ -52,17 +60,34 @@ namespace HOLE
         private void SubToEvents()
         {
             InstanceManager.InstanceChangedEvent += SelectInstance;
-            AkiManager.AkiStartedEvent += AkiStarted;
-            AkiManager.AkiStoppedEvent += AkiExited;
+            //AkiManager.AkiStartedEvent += AkiStarted;
+            //AkiManager.AkiStoppedEvent += AkiExited;
+            AkiManager.AkiStatusEvent += AkiStatusChanged;
         }
 
-        private void AkiExited(Instance instance)
+        private void AkiStatusChanged(AkiInstance instance, AkiStatus status)
+        {
+            AkiInstance? selectedInstance = InstanceManager.SelectedInstance;
+            if (!selectedInstance.Equals(instance)) return;
+            UpdateStatusLabel(status);
+        }
+
+        private async void UpdateStatusLabel(AkiStatus status)
+        {
+
+            Invoke((MethodInvoker)delegate {
+                AkiStatusLabel.Text = status.ToString();
+            });
+            await Task.CompletedTask;
+        }
+
+        private void AkiExited(AkiInstance instance)
         {
             ToggleGameButtons(false);
             ToggleServerConfigButtons(true);
         }
 
-        private void AkiStarted(Instance instance)
+        private void AkiStarted(AkiInstance instance)
         {
             ToggleServerConfigButtons(false);
             ToggleGameButtons(true);
@@ -81,15 +106,15 @@ namespace HOLE
         }
         private void InstanceFolderButton_Click(object sender, EventArgs e)
         {
-            Instance? instance = InstanceManager.SelectedInstance;
+            AkiInstance? instance = InstanceManager.SelectedInstance;
             if (instance == null) return;
-            FileUtils.OpenExplorer(((Instance)instance).Directory);
+            FileUtils.OpenExplorer(((AkiInstance)instance).Directory);
         }
         private void ModsFolderButton_Click(object sender, EventArgs e)
         {
-            Instance? instance = InstanceManager.SelectedInstance;
+            AkiInstance? instance = InstanceManager.SelectedInstance;
             if (instance == null) return;
-            FileUtils.OpenExplorer(((Instance)instance).ModsPath); // Instance Mods Folder
+            FileUtils.OpenExplorer(((AkiInstance)instance).ModsPath); // Instance Mods Folder
         }
         private void SharedModsFolderButton_Click(object sender, EventArgs e)
         {
@@ -133,16 +158,16 @@ namespace HOLE
         #endregion
         private void KillAKIButton_Click(object sender, EventArgs e)
         {
-            AkiManager.KillAki();
+            AkiInstance? selectedInstance = InstanceManager.SelectedInstance;
+            if (selectedInstance == null) return;
+            AkiManager.KillAki((AkiInstance)selectedInstance);
         }
 
         private async void StartAKIButton_Click(object sender, EventArgs e)
         {
-            Instance? instance = InstanceManager.SelectedInstance;
+            AkiInstance? instance = InstanceManager.SelectedInstance;
             if(instance == null) return;
-            await AkiManager.StartAkiAsync((Instance)instance);
-            //await Task.Delay(250);
-            //DetectAki(false);
+            await AkiManager.StartAkiAsync((AkiInstance)instance);
             await LoadServerAsync();
         }
         #endregion
@@ -156,7 +181,7 @@ namespace HOLE
         private void PlayButton_Click(object sender, EventArgs e)
         {
             //ServerProfileInfo profiles = GetServerProfiles();
-            Instance? instance = InstanceManager.SelectedInstance;
+            AkiInstance? instance = InstanceManager.SelectedInstance;
             //Profile? selectedProfile = InstanceManager.SelectedInstance;
             //if (instance == null || selectedProfile == null) return;
             //StartTarkov((Instance)instance,(Profile)selectedProfile);
@@ -175,21 +200,20 @@ namespace HOLE
 
         #region Instance
         #region Functions
-        private async Task LoadServerAsync()
+        private async Task LoadServerAsync(AkiInstance instance)
         {
-            await ServerManager.LoadDefaultServerAsync(Settings.LauncherSettings.ServerURL);
-            Logger.Log("Connected to Server " + ServerManager.SelectedServer?.backendUrl ?? "NotSetup");
+            await instance.ServerManager.LoadDefaultServerAsync();
             //await ServerManager.PingServer();
         }
         private async void SelectInstance(object? sender, InstanceEventArgs e)
         {
-            //await Task.Delay(0);
-            
-            Instance? instance = e.Instance;
+            AkiInstance? instance = e.Instance;
             ToggleInstanceButtons(instance);
             CheckGameButtons();
             ProfileButton.Text = e.Instance?.Name ?? "";
             if (instance == null) return;
+            TarkovCache.LoadCache((AkiInstance)instance);
+            UpdateStatusLabel(AkiManager.GetStatus((AkiInstance)instance));
             bool response = ServerManager.PingServer();
             if (!response) return; // Aki Dead
             ServerProfileInfo[] profiles = await GetProfilesAsync();
@@ -215,17 +239,17 @@ namespace HOLE
         {
             InstanceManager.Cache();
             InstanceView.Items.Clear();
-            foreach (Instance instance in InstanceManager.Instances.Values)
+            foreach (AkiInstance instance in InstanceManager.Instances.Values)
             {
                 if (TarkovCache.Directory == null) TarkovCache.LoadCache(instance);
                 DisplayInstance(instance);
             }
         }
-        private void DisplayInstance(Instance instance)
+        private void DisplayInstance(AkiInstance instance)
         {
             InstanceView.Items.Add(instance.Name);
         }
-        private async void ToggleInstanceButtons(Instance? instance)
+        private async void ToggleInstanceButtons(AkiInstance? instance)
         {
             await ToggleStripItemsAsync(instance != null, ActiveInstanceComponents);
         }
@@ -251,15 +275,15 @@ namespace HOLE
         }
         private void InstanceFolder_Click(object sender, EventArgs e)
         {
-            Instance? selectedInstance = InstanceManager.SelectedInstance;
+            AkiInstance? selectedInstance = InstanceManager.SelectedInstance;
             if (selectedInstance == null) return;
-            FileUtils.OpenExplorer(((Instance)selectedInstance).Directory);
+            FileUtils.OpenExplorer(((AkiInstance)selectedInstance).Directory);
         }
         private void EditInstanceButton_Click(object sender, EventArgs e)
         {
-            Instance? selectedInstance = InstanceManager.SelectedInstance;
+            AkiInstance? selectedInstance = InstanceManager.SelectedInstance;
             if (selectedInstance == null) return;
-            InstanceManager.Open((Instance)selectedInstance);
+            InstanceManager.Open((AkiInstance)selectedInstance);
         }
         #endregion
         #endregion

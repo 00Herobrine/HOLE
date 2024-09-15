@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\source\repos\Launcher\project\Aki.ByteBanger\Aki.ByteBanger.csproj" />
-    <ProjectReference Include="..\..\..\..\source\repos\Launcher\project\Aki.Launcher.Base\Aki.Launcher.Base.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +30,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Aki.Launcher.Base\Controllers\" />
   </ItemGroup>
 
 </Project>

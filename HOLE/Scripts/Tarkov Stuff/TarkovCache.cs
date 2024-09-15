@@ -1,6 +1,5 @@
 ﻿using HOLE.Scripts;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace HOLE
 {
@@ -20,10 +19,10 @@ namespace HOLE
         private static void LoadCache(object? sender, InstanceEventArgs e)
         {
             if (e.Instance == null) return;
-            LoadCache((Instance)e.Instance);
+            LoadCache((AkiInstance)e.Instance);
         }
 
-        public static void LoadCache(Instance instance)
+        public static void LoadCache(AkiInstance instance)
         {
             Directory = instance.Directory;
             Logger.Log("Initializing " + instance.GlobalLocale);
@@ -33,7 +32,6 @@ namespace HOLE
 
         public static TarkovItem? GetItem(string id)
         {
-            Logger.Log("Getting item for " + id);
             Items.TryGetValue(id, out TarkovItem item);
             return item;
         }

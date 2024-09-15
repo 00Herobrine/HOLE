@@ -1,25 +1,26 @@
-﻿using HOLE.Scripts.Tarkov_Stuff;
+﻿using Aki.Launcher.Models.Aki;
+using HOLE.Scripts.Tarkov_Stuff;
 using HOLE.Tarkov_Stuff;
 
-namespace HOLE.Scripts
+namespace HOLE.Scripts.Aki
 {
-    public class Profile
+    public struct Profile
     {
-        public PlayerInfo Info { get; private set; }
+        public ProfileInfo Info { get; private set; }
         public Characters Characters { get; private set; }
-        public string[] Suits { get; private set; } = [];
+        public string[] Suits { get; private set; }
         public AkiInfo Aki { get; private set; }
         public VitalityInfo Vitality { get; private set; }
         public RaidInfo InRaid { get; private set; }
     }
 
-    public struct PlayerInfo
+    public struct ProfileInfo
     {
-        public string id;
-        public string username; 
-        public string password;
-        public string wipe;
-        public string edition;
+        public string id { get; set; }
+        public string username { get; set; }
+        public string password { get; set; }
+        public bool wipe { get; set; }
+        public string edition { get; set; }
     }
     public struct Characters
     {
@@ -27,7 +28,7 @@ namespace HOLE.Scripts
         public Character scav { get; }
     }
 
-    public struct Character 
+    public struct Character
     {
         public Encyclopedia? Encyclopedia { get; set; }
         public Health Health { get; set; }

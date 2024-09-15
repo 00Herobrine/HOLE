@@ -1,12 +1,16 @@
-﻿using System.ComponentModel;
+﻿using Aki.Launcher.MiniCommon;
+using HOLE.Scripts.Aki;
+using HOLE.Scripts.Launcher;
+using HOLE.Scripts.Misc;
+using System.ComponentModel;
 using System.Text.Json;
 
 namespace HOLE.Scripts
 {
     internal static class InstanceManager
     {
-        public static Instance? SelectedInstance { get; private set; } 
-        public static Dictionary<string, Instance> Instances { get; private set; } = new();
+        public static AkiInstance? SelectedInstance { get; private set; } 
+        public static Dictionary<string, AkiInstance> Instances { get; private set; } = new();
         public static event EventHandler<InstanceEventArgs>? InstanceChangingEvent;
         public static event EventHandler<InstanceEventArgs>? InstanceChangedEvent;
         public static event EventHandler<InstanceEventArgs>? InstanceAddedEvent;
@@ -18,9 +22,9 @@ namespace HOLE.Scripts
             foreach (string InstancePath in Directory.GetDirectories(Settings.InstancesPath)) 
                 Add(InstancePath);
         }
-        public static Instance? Get(string name) => Instances.TryGetValue(name, out Instance instance) ? instance : null;
-        public static void Add(string Path) => Add(new Instance(Path));
-        public static void Add(Instance Instance)
+        public static AkiInstance? Get(string name) => Instances.TryGetValue(name, out AkiInstance instance) ? instance : null;
+        public static void Add(string Path) => Add(new AkiInstance(Path));
+        public static void Add(AkiInstance Instance)
         {
             string name = Instance.Name;
             if (Instances.ContainsKey(name)) Logger.Log($"{name} is already in use.");
@@ -30,11 +34,11 @@ namespace HOLE.Scripts
         }
         public static void Remove(string name)
         {
-            Instance? instance = Instances[name];
+            AkiInstance? instance = Instances[name];
             if (Instances.Remove(name)) InstanceRemovedEvent?.Invoke(null, new InstanceEventArgs(instance));
         }
 
-        internal static void SetSelected(Instance? selectedInstance)
+        internal static void SetSelected(AkiInstance? selectedInstance)
         {
             var args = new InstanceEventArgs(selectedInstance);
             InstanceChangingEvent?.Invoke(null, args);
@@ -44,7 +48,7 @@ namespace HOLE.Scripts
         }
 
         private static Dictionary<string, InstanceManagerForm> Managers = new(); // InstanceName, ManagerForm
-        internal static void Open(Instance selectedInstance)
+        internal static void Open(AkiInstance selectedInstance)
         {
             string InstanceName = selectedInstance.Name;
             if (Managers.TryGetValue(InstanceName, out InstanceManagerForm? form))
@@ -58,12 +62,12 @@ namespace HOLE.Scripts
         }
     }
 
-    public class InstanceEventArgs(Instance? newInstance) : CancelEventArgs
+    public class InstanceEventArgs(AkiInstance? newInstance) : CancelEventArgs
     {
-        public Instance? Instance { get; } = newInstance;
+        public AkiInstance? Instance { get; } = newInstance;
     }
 
-    public struct Instance
+    public struct AkiInstance
     {
         public readonly string Directory { get; }
         public readonly string Name { get; }
@@ -83,11 +87,17 @@ namespace HOLE.Scripts
         public readonly string UserPath => Path.Combine(Directory, "user");
         public readonly string ModsPath => Path.Combine(UserPath, "mods");
         public readonly string ProfilesPath => Path.Combine(UserPath, "profiles");
-        public Instance(string InstanceDirectory)
+        public ServerManager ServerManager { get; }
+        public AccountManager AccountManager { get; }
+        public Request Request { get; }
+        public AkiInstance(string InstanceDirectory)
         {
             Directory = InstanceDirectory;
             Name = Path.GetFileName(InstanceDirectory) ?? InstanceDirectory.Split(Path.DirectorySeparatorChar).Last();
             ConfigCheck();
+            ServerManager = new(this);
+            AccountManager = new(this);
+            Request = new Request(null, Settings.LauncherSettings.ServerURL);
         }
 
         private static readonly JsonSerializerOptions options = new() { WriteIndented = true };

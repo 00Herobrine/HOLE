@@ -4,11 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HOLE", "HOLE\HOLE.csproj", "{C79978A9-B226-40AC-BC02-74AC7EC2D23F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{433174D3-DF3F-4EBA-AA21-32C3A40A3777} = {433174D3-DF3F-4EBA-AA21-32C3A40A3777}
-	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aki.Launcher.Base", "..\..\..\source\repos\Launcher\project\Aki.Launcher.Base\Aki.Launcher.Base.csproj", "{433174D3-DF3F-4EBA-AA21-32C3A40A3777}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aki.ByteBanger", "..\..\..\source\repos\Launcher\project\Aki.ByteBanger\Aki.ByteBanger.csproj", "{3B864EE0-01F1-4FD2-B5B2-59436A9F7BF0}"
 EndProject
@@ -22,10 +17,6 @@ Global
 		{C79978A9-B226-40AC-BC02-74AC7EC2D23F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C79978A9-B226-40AC-BC02-74AC7EC2D23F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C79978A9-B226-40AC-BC02-74AC7EC2D23F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{433174D3-DF3F-4EBA-AA21-32C3A40A3777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{433174D3-DF3F-4EBA-AA21-32C3A40A3777}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{433174D3-DF3F-4EBA-AA21-32C3A40A3777}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{433174D3-DF3F-4EBA-AA21-32C3A40A3777}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B864EE0-01F1-4FD2-B5B2-59436A9F7BF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B864EE0-01F1-4FD2-B5B2-59436A9F7BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B864EE0-01F1-4FD2-B5B2-59436A9F7BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU

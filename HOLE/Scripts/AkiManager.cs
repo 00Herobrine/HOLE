@@ -1,6 +1,5 @@
-﻿using Aki.Launcher;
+﻿
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -15,24 +14,10 @@ namespace HOLE.Scripts
     }
     internal partial class AkiManager
     {
-        public static Process? AkiProcess { get; private set; } = null;
-        public static Action<Instance>? AkiStartingEvent; // Aki Window Opened
-        public static Action<Instance>? AkiStartedEvent; // Online
-        public static Action<Instance>? AkiStoppedEvent; // Offline/Exited
-        public static Action<AkiStatus>? AkiStatusEvent; // Status Changed
-        private static AkiStatus status = AkiStatus.OFFLINE;
-        public static AkiStatus Status // Property
-        {
-            get => status;
-            set
-            {
-                if (status != value)
-                {
-                    status = value;
-                    AkiStatusEvent?.Invoke(value); // Invoke event when Status changes
-                }
-            }
-        }
+        public static Dictionary<string, AkiInstance> AkiInstances { get; private set; } = []; // Instance Name, Process 
+        public static Action<AkiInstance>? AkiStartingEvent; // Aki Window Opened
+        public static Action<AkiInstance>? AkiStoppedEvent; // Exited
+        public static Action<AkiInstance, AkiStatus>? AkiStatusEvent; // Status Changed, <Instance, oldStatus, New Status
         public const string AKI_SERVER = "aki.server";
         public const string AKI_SERVER_EXE = $"{AKI_SERVER}.exe";
 
@@ -57,47 +42,40 @@ namespace HOLE.Scripts
             return AkiStatus.OFFLINE;
         }
 
-        public static async Task DetectAki()
+        private static void SetStatus(AkiInstance akiInstance)
         {
-            try
-            {
-                Process[] activeAkis = await GetProcessesAsync();
-                bool isActive = activeAkis.Length > 0;
-                if (isActive && AkiProcess == null) // Not Bound so can't get info
-                    Status = ServerManager.PingServer() ? AkiStatus.ONLINE : AkiStatus.OFFLINE; 
-                foreach(Process akiProcess in activeAkis)
-                {
-                    if (akiProcess != AkiProcess) continue;
-                    // the checked process is the current active server so check its status
-                    Status = ServerManager.PingServer() ? AkiStatus.ONLINE : Status == AkiStatus.STARTING ? AkiStatus.STARTING : AkiStatus.OFFLINE;
-                }
-            } catch (Exception ex)
-            {
-                Logger.Log(ex.Message);
-            }
-            Status = AkiStatus.OFFLINE;
-            await Task.CompletedTask;
+            AkiInstances[akiInstance.Instance.Name] = akiInstance;
+            AkiStatusEvent?.Invoke(akiInstance.Instance, akiInstance.Status);
+            Logger.Log($"Set status for {akiInstance.Instance.Name} with {akiInstance.Status}");
         }
-
-        public static async Task StartAkiAsync(Instance instance)
+        private static void SetStatus(AkiInstance instance, AkiStatus akiStatus)
+        {
+            if (!AkiInstances.TryGetValue(instance.Name, out AkiInstance akiInstance)) return;
+            akiInstance.Status = akiStatus;
+            AkiInstances[instance.Name] = akiInstance;
+            AkiStatusEvent?.Invoke(akiInstance.Instance, akiStatus);
+        }
+        public static async Task StartAkiAsync(AkiInstance instance)
         {
             try
             {
                 Process akiProcess = new();
                 akiProcess.StartInfo.WorkingDirectory = instance.Directory;
                 akiProcess.StartInfo.FileName = Path.Combine(instance.Directory, AKI_SERVER_EXE);
-                //akiProcess.StartInfo.CreateNoWindow = true;
+                akiProcess.StartInfo.CreateNoWindow = false;
                 akiProcess.StartInfo.UseShellExecute = false;
                 akiProcess.StartInfo.RedirectStandardOutput = true;
+                akiProcess.StartInfo.RedirectStandardError = true;
                 akiProcess.StartInfo.StandardOutputEncoding = Encoding.UTF8;
-                akiProcess.OutputDataReceived += ProcessAkiConsoleOutput;
-                akiProcess.Exited += (sender, e) => // Listen for the Process Exit
-                {
-                    AkiStoppedEvent?.Invoke(instance);
-                };
-                if (akiProcess.Start()) AkiStartingEvent?.Invoke(instance);
+                akiProcess.OutputDataReceived += (sender, e) => ProcessAkiConsoleOutput(sender, e, instance);
+                akiProcess.ErrorDataReceived += (sender, e) => ProcessAkiConsoleOutput(sender, e, instance);
+                // Listen for the Process Exit
+                akiProcess.Exited += (sender, e) => AkiStoppedEvent?.Invoke(instance);
+                if (!akiProcess.Start()) return;
+                //akiProcess.BeginOutputReadLine();
                 akiProcess.BeginOutputReadLine();
-                AkiProcess = akiProcess;
+                SetStatus(new AkiInstance(instance, akiProcess, AkiStatus.STARTING));
+                AkiStartingEvent?.Invoke(instance);
             }
             catch (Exception ex)
             {
@@ -105,8 +83,34 @@ namespace HOLE.Scripts
             }
             await Task.CompletedTask;
         }
+        private static async void ProcessAkiConsoleOutput(object sender, DataReceivedEventArgs e, AkiInstance instance)
+        {
+            string? r = e.Data;
+            if (r == null) return;
+            r = ConsoleRegex().Replace(r, string.Empty);
+            if (r.Contains($"Port {Settings.LauncherSettings.ServerPort} is already in use")) SetStatus(instance, AkiStatus.OFFLINE);
+            else if (r.Contains(Settings.LauncherSettings.ServerURL)) SetStatus(instance, AkiStatus.ONLINE);
+            Logger.Log(r);
+            await Task.CompletedTask;
+        }
+        [GeneratedRegex(@"\[[0-1];[0-9][a-z]|\[[0-9][0-9][a-z]|\[[0-9][a-z]|\[[0-9][A-Z]")]
+        private static partial Regex ConsoleRegex();
 
-        public static async void KillAki()
+        internal static AkiStatus GetStatus(AkiInstance instance)
+        {
+            AkiStatus status = AkiInstances.TryGetValue(instance.Name, out AkiInstance akiInstance) ? akiInstance.Status : AkiStatus.OFFLINE;
+            Logger.Log($"Got status '{status}' for {instance.Name}");
+            return status;
+        }
+
+        internal static async void KillAki(AkiInstance instance)
+        {
+            if (!AkiInstances.TryGetValue(instance.Name, out AkiInstance akiInstance)) return;
+            akiInstance.Process.Kill();
+            await akiInstance.Process.WaitForExitAsync();
+            AkiStoppedEvent?.Invoke(instance);
+        }
+        public static async void KillActiveAkis()
         {
             bool isRunning = await IsAkiRunningAsync();
             if (!isRunning) return;
@@ -116,22 +120,9 @@ namespace HOLE.Scripts
                 akiProcess.Kill();
                 Logger.Log($"Killed {akiProcess.ProcessName} ({akiProcess.Id})");
                 await akiProcess.WaitForExitAsync();
-                AkiProcess = null;
             }
             await Task.Delay(250);
-            await DetectAki();
+            //await DetectAki();
         }
-        private static async void ProcessAkiConsoleOutput(object sender, DataReceivedEventArgs e)
-        {
-            string? r = e.Data;
-            if (r == null) return;
-            r = ConsoleRegex().Replace(r, string.Empty);
-            //if(r.Contains($"Port {Settings.LauncherSettings.ServerPort} is already in use"))
-            if (r.Contains(Settings.LauncherSettings.ServerURL)) Status = AkiStatus.ONLINE;
-            Logger.Log(r);
-            await Task.CompletedTask;
-        }
-        [GeneratedRegex(@"\[[0-1];[0-9][a-z]|\[[0-9][0-9][a-z]|\[[0-9][a-z]|\[[0-9][A-Z]")]
-        private static partial Regex ConsoleRegex();
     }
 }

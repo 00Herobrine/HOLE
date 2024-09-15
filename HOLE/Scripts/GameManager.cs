@@ -1,5 +1,7 @@
 ﻿using Aki.Launcher.Helpers;
 using Aki.Launcher.Models.Launcher;
+using HOLE.Aki.Launcher.Base.Models.Models.Launcher;
+using HOLE.Scripts.Aki;
 using System.Diagnostics;
 
 namespace HOLE.Scripts
@@ -12,7 +14,7 @@ namespace HOLE.Scripts
         public static Action<GameEventArgs>? TarkovStoppedEvent;
         public const int MAX_PATCH_ATTEMPTS = 3;
 
-        public static async Task StartTarkov(Instance instance, Profile profile)
+        public static async Task StartTarkov(AkiInstance instance, Profile profile)
         {
             // File Patching
             PatchResultInfo? patchResult = await PatchTarkovDlls(instance);
@@ -69,7 +71,7 @@ namespace HOLE.Scripts
             }
         }
 
-        private static async Task<PatchResultInfo?> PatchTarkovDlls(Instance instance, int patchAttempt = 1)
+        private static async Task<PatchResultInfo?> PatchTarkovDlls(AkiInstance instance, int patchAttempt = 1)
         {
             if(patchAttempt > MAX_PATCH_ATTEMPTS) return null;
             string dll = Path.Combine(instance.Directory, "/EscapeFromTarkov_Data/Managed/Assembly-CSharp.dll");
@@ -81,9 +83,9 @@ namespace HOLE.Scripts
             return null;
         }
     }
-    public class GameEventArgs(int processID, Instance instance) : EventArgs
+    public class GameEventArgs(int processID, AkiInstance instance) : EventArgs
     {
         public readonly int ProcessID = processID;
-        public Instance Instance { get; private set; } = instance;
+        public AkiInstance Instance { get; private set; } = instance;
     }
 }
