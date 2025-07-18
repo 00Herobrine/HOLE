@@ -23,10 +23,18 @@ namespace HOLE.Assets.Scripts
     public static class InstanceManager
     {
         public static string InstancesFolder => Launcher.Config.Paths.Instances;
-        //public static List<InstanceFolder> Instances { get; private set; } = new();
+        private static List<Instance> Instances = new();
         //public static InstanceFolder SelectedInstance { get; private set; }
         //public static Action? InstancesLoadedEvent;
         //public static Action? InstanceSelectedEvent;
+
+        public static async void LoadInstances()
+        {
+            if (!Directory.Exists(InstancesFolder))
+            {
+                Directory.CreateDirectory(InstancesFolder);
+            }
+        }
 
         public static async Task<List<Instance>> GetInstances()
         {

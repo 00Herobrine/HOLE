@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 
@@ -14,6 +13,7 @@ namespace HOLE.Assets.Scripts
         public const string ModIconsFolderName = "ModIcons";
         public const string IconsFolderName = "Icons";
         public const string ThemesFolderName = "Themes";
+        public const string LocalesFolderName = "Locales";
 
         public string Tarkov = Path.Combine(baseDirectory, TarkovFolderName);
         public string Instances = Path.Combine(baseDirectory, InstancesFolderName);
@@ -21,6 +21,7 @@ namespace HOLE.Assets.Scripts
         public string Mods = Path.Combine(baseDirectory, ModsFolderName);
         public string ModIcons = Path.Combine(baseDirectory, ModIconsFolderName);
         public string Themes = Path.Combine(baseDirectory, ThemesFolderName);
+        public string Locales = Path.Combine(baseDirectory, LocalesFolderName);
 
         public override string ToString()
         {
@@ -33,34 +34,52 @@ namespace HOLE.Assets.Scripts
             sb.AppendLine($"{Mods}");
             sb.AppendLine($"{ModIcons}");
             sb.AppendLine($"{Themes}");
+            sb.AppendLine($"{Locales}");
             sb.AppendLine("]");
             return sb.ToString();
         }
     }
 
-    public struct DownloadSettings
+    public struct DownloaderSettings(int downloadSpeed = 0, int concurrentDownloads = 1, int retryAttempts = 1, bool infiniteScroll = false, bool webSearch = false)
     {
-        public int DownloadSpeed;
-        public int ConcurrentDownloads;
-        public int NumberOfRetries;
+        public int DownloadSpeed = downloadSpeed;
+        public int ConcurrentDownloads = concurrentDownloads;
+        public int RetryAttempts = retryAttempts;
+        public bool InfiniteScroll = infiniteScroll;
+        public bool WebSearch = webSearch;
     }
 
-    public struct GameSettings
+    public struct LauncherSettings(bool autoUpdate, bool showTimeSpentPlaying, bool showTotalTimeSpentPlaying, bool recordTimeSpentPlaying, DateTimeFormat timeFormat, LaunchPreference launchPreference)
     {
-        public bool ShowTimeSpentPlaying;
-        public bool ShowTotalTimeSpentPlaying;
-        public bool RecordTimeSpentPlaying;
-        public DateTimeFormat TimeFormat;
-        public LaunchPreference LaunchPreference;
+        public bool AutoUpdate = autoUpdate;
+        public bool ShowTimeSpentPlaying = showTimeSpentPlaying;
+        public bool ShowTotalTimeSpentPlaying = showTotalTimeSpentPlaying;
+        public bool RecordTimeSpentPlaying = recordTimeSpentPlaying;
+        public DateTimeFormat TimeFormat = timeFormat;
+        public LaunchPreference LaunchPreference = launchPreference;
     }
 
-    public struct LauncherConfig(string baseDirectory)
+    public struct LoggerSettings(string prefix, string format, int maxLogLines = 10000)
     {
-        public LauncherPaths Paths { get; set; } = new LauncherPaths(baseDirectory);
-        public int ModDownloadBufferSize { get; set; }
-        public int ModCacheRefresh { get; set; }
-        public bool AutoUpdate { get; set; } = false;
-        public LaunchPreference LaunchPreference { get; set; } = LaunchPreference.None;
+        public string Prefix = prefix;
+        public string Format = format;
+        public int MaxLogLines = maxLogLines;
+    }
+
+    public struct LauncherConfig(string baseDirectory,
+        int modDownloadBufferSize = 8192, int modCacheRefresh = 10, int maxLogLines = 100,
+        bool autoUpdate = false, bool infiniteScroll = true, LaunchPreference launchPreference = LaunchPreference.None)
+    {
+        public LauncherPaths Paths = new LauncherPaths(baseDirectory);
+        public int ModDownloadBufferSize = modDownloadBufferSize;
+        public int ModCacheRefresh = modCacheRefresh;
+        public int MaxLogLines = maxLogLines;
+        public string LogPrefix = Logger.DefaultPrefix;
+        public string LogFormat = "[{Prefix}] [{Level}] {Message}";
+        public bool AutoUpdate = autoUpdate;
+        public bool InfiniteScroll = infiniteScroll;
+        public bool WebSearch = false; // Will search through the SPT website as well as the local cache
+        public LaunchPreference LaunchPreference = launchPreference; 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -93,6 +112,7 @@ namespace HOLE.Assets.Scripts
         public static void Initialize()
         {
             LoadLauncherConfig();
+            //InstanceManager.LoadInstances();
             //InitializeCoreManagers();
         }
 
@@ -104,28 +124,28 @@ namespace HOLE.Assets.Scripts
         }
         
         private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
-        public static void LoadLauncherConfig()
+        private static void LoadLauncherConfig(bool forceCreate = false)
         {
-            if (!File.Exists(ConfigPath))
+            if (!File.Exists(ConfigPath) || forceCreate)
             {
                 CreateLauncherConfig();
-            } 
-            string json = File.ReadAllText(ConfigPath);
-            Config = JsonSerializer.Deserialize<LauncherConfig>(json, SerializerOptions);
+            }
+            string configJson = File.ReadAllText(ConfigPath);
+            Config = JsonSerializer.Deserialize<LauncherConfig>(configJson, SerializerOptions);
         }
 
-        private static void CreateLauncherConfig(bool overwrite = false)
+        private static void CreateLauncherConfig()
         {
             try
             {
                 LauncherConfig launcherConfig = new LauncherConfig(ExePath);
                 string json = JsonSerializer.Serialize(launcherConfig, SerializerOptions);
                 File.WriteAllText(ConfigPath, json);
-                Debug.WriteLine($"Created config to {ConfigPath}.\n{launcherConfig.ToString()}");
+                Logger.Info($"Created config to '{ConfigPath}'.\n{launcherConfig.ToString()}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to save config: {ex.Message}");
+                Logger.Warn($"Failed to save config.\n'{ex.Message}'");
             }
         }
     }

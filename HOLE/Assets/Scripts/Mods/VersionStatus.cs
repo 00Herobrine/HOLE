@@ -1,4 +1,4 @@
-namespace HOLE.Assets.Scripts;
+namespace HOLE.Assets.Scripts.Mods;
 
 public enum VersionStatus
 {

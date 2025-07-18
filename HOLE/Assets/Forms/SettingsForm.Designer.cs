@@ -31,9 +31,9 @@
             GameButton = new Button();
             LauncherButton = new Button();
             flowLayoutPanel1 = new FlowLayoutPanel();
+            LanguageButton = new Button();
             LauncherPanel = new Panel();
             flowLayoutPanel2 = new FlowLayoutPanel();
-            LanguageButton = new Button();
             flowLayoutPanel1.SuspendLayout();
             LauncherPanel.SuspendLayout();
             SuspendLayout();
@@ -68,6 +68,15 @@
             flowLayoutPanel1.Size = new Size(156, 620);
             flowLayoutPanel1.TabIndex = 0;
             // 
+            // LanguageButton
+            // 
+            LanguageButton.Location = new Point(3, 95);
+            LanguageButton.Name = "LanguageButton";
+            LanguageButton.Size = new Size(150, 40);
+            LanguageButton.TabIndex = 2;
+            LanguageButton.Text = "Language";
+            LanguageButton.UseVisualStyleBackColor = true;
+            // 
             // LauncherPanel
             // 
             LauncherPanel.Controls.Add(flowLayoutPanel2);
@@ -84,15 +93,6 @@
             flowLayoutPanel2.Name = "flowLayoutPanel2";
             flowLayoutPanel2.Size = new Size(586, 620);
             flowLayoutPanel2.TabIndex = 0;
-            // 
-            // LanguageButton
-            // 
-            LanguageButton.Location = new Point(3, 95);
-            LanguageButton.Name = "LanguageButton";
-            LanguageButton.Size = new Size(150, 40);
-            LanguageButton.TabIndex = 2;
-            LanguageButton.Text = "Language";
-            LanguageButton.UseVisualStyleBackColor = true;
             // 
             // SettingsForm
             // 

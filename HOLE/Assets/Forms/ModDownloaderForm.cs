@@ -1,4 +1,5 @@
 ﻿using HOLE.Assets.Scripts;
+using HOLE.Assets.Scripts.Mods;
 
 namespace HOLE.Assets.Forms
 {
@@ -16,7 +17,8 @@ namespace HOLE.Assets.Forms
         private void ModDownloaderForm_Load(object sender, EventArgs e)
         {
             SubscribeToEvents();
-            _ = ModManager.GetSPTModQueryAsync();
+            _ = ModManager.QuerySPTModList();
+            //_ = ModManager.GetSPTModDataAsync();
         }
 
         private void SubscribeToEvents()
@@ -24,9 +26,9 @@ namespace HOLE.Assets.Forms
             ModManager.SPTModDataQueried += ModsQueried;
         }
 
-        private void ModsQueried(SPTModsQuery modQueryData)
+        private void ModsQueried(SPTModsData modDataData)
         {
-            UpdateModList(modQueryData.mod_data);
+            UpdateModList(modDataData.mod_data);
         }
 
         private void SearchButton_Click(object sender, EventArgs e)
@@ -34,7 +36,7 @@ namespace HOLE.Assets.Forms
             UpdateWithFilters();
         }
 
-        private void UpdateWithFilters() => UpdateWithFiltersAsync(ModManager.GetSPTModQueryAsync().Result.mod_data);
+        private void UpdateWithFilters() => UpdateWithFiltersAsync(ModManager.GetSPTModDataAsync().Result.mod_data);
         private async void UpdateWithFiltersAsync(SPTModData[] modData)
         {
             modsView.Items.Clear();
@@ -75,7 +77,8 @@ namespace HOLE.Assets.Forms
             if (modsView.SelectedItems.Count <= 0) return;
             SPTModData? modData = (SPTModData?)modsView.SelectedItems[0].Tag;
             if (modData == null) return;
-            ModDownload? download = await ModManager.DownloadAsync(int.Parse(((SPTModData) modData).id));
+            if (int.TryParse(modData.Value.id, out int modId))
+                ModManager.ScheduleDownloadAsync(modId);
         }
     }
 }

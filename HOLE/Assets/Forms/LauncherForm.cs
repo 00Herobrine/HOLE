@@ -10,11 +10,11 @@ namespace HOLE.Assets.Forms
         public LauncherForm()
         {
             InitializeComponent();
-            Launcher.Initialize(); // Should only be Initialized once
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Launcher.Initialize(); // Should only be Initialized once
             SubscribeToEvents();
             LoadInstanceIcons();
             LoadInstances();
@@ -71,7 +71,7 @@ namespace HOLE.Assets.Forms
 
         private async void SetIcons(IconPack iconPack)
         {
-            AddInstanceButton.Image = Image.FromFile(iconPack.AddInstanceIcon + ".png");
+            AddFIKAButton.Image = Image.FromFile(iconPack.AddInstanceIcon + ".png");
         }
 
         private void InstancesView_AfterLabelEdit(object sender, LabelEditEventArgs e)

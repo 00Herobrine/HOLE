@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
+using HOLE.Assets.Scripts.Mods;
 
 namespace HOLE.Assets.Scripts.Utils;
 
@@ -15,5 +16,17 @@ public static class Extensions
             return attributes[0].Description;
         else
             return value.ToString();
+    }
+    public static VersionStatus VersionComparison(string newVersion, string oldVersion) => VersionComparison(Version.Parse(newVersion), Version.Parse(oldVersion));
+    public static VersionStatus VersionComparison(Version version1, Version version2)
+    {
+        int state = version1.CompareTo(version2);
+        return state switch
+        {
+            0 => VersionStatus.Match,
+            1 => VersionStatus.Newer,
+            -1 => VersionStatus.Outdated,
+            _ => VersionStatus.None,
+        };
     }
 }

@@ -40,11 +40,13 @@
             FilterDescription = new CheckBox();
             FilterName = new CheckBox();
             DownloadConfirmButton = new Button();
-            label2 = new Label();
-            label1 = new Label();
+            SortLabel = new Label();
+            VersionLabel = new Label();
             DownloadSelectButton = new Button();
             selectedVersionBox = new ComboBox();
             comboBox1 = new ComboBox();
+            InfiniteScroll = new CheckBox();
+            FilterWebSearch = new CheckBox();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -148,11 +150,13 @@
             // 
             // panel2
             // 
+            panel2.Controls.Add(FilterWebSearch);
+            panel2.Controls.Add(InfiniteScroll);
             panel2.Controls.Add(FilterDescription);
             panel2.Controls.Add(FilterName);
             panel2.Controls.Add(DownloadConfirmButton);
-            panel2.Controls.Add(label2);
-            panel2.Controls.Add(label1);
+            panel2.Controls.Add(SortLabel);
+            panel2.Controls.Add(VersionLabel);
             panel2.Controls.Add(DownloadSelectButton);
             panel2.Controls.Add(selectedVersionBox);
             panel2.Controls.Add(comboBox1);
@@ -165,7 +169,7 @@
             // FilterDescription
             // 
             FilterDescription.AutoSize = true;
-            FilterDescription.Location = new Point(536, 31);
+            FilterDescription.Location = new Point(426, 7);
             FilterDescription.Name = "FilterDescription";
             FilterDescription.Size = new Size(86, 19);
             FilterDescription.TabIndex = 7;
@@ -175,7 +179,7 @@
             // FilterName
             // 
             FilterName.AutoSize = true;
-            FilterName.Location = new Point(536, 6);
+            FilterName.Location = new Point(520, 7);
             FilterName.Name = "FilterName";
             FilterName.Size = new Size(58, 19);
             FilterName.TabIndex = 6;
@@ -192,23 +196,23 @@
             DownloadConfirmButton.UseVisualStyleBackColor = true;
             DownloadConfirmButton.Click += DownloadConfirmButton_Click;
             // 
-            // label2
+            // SortLabel
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(625, 6);
-            label2.Name = "label2";
-            label2.Size = new Size(31, 15);
-            label2.TabIndex = 4;
-            label2.Text = "Sort:";
+            SortLabel.AutoSize = true;
+            SortLabel.Location = new Point(625, 6);
+            SortLabel.Name = "SortLabel";
+            SortLabel.Size = new Size(31, 15);
+            SortLabel.TabIndex = 4;
+            SortLabel.Text = "Sort:";
             // 
-            // label1
+            // VersionLabel
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(3, 6);
-            label1.Name = "label1";
-            label1.Size = new Size(48, 15);
-            label1.TabIndex = 3;
-            label1.Text = "Version:";
+            VersionLabel.AutoSize = true;
+            VersionLabel.Location = new Point(3, 6);
+            VersionLabel.Name = "VersionLabel";
+            VersionLabel.Size = new Size(48, 15);
+            VersionLabel.TabIndex = 3;
+            VersionLabel.Text = "Version:";
             // 
             // DownloadSelectButton
             // 
@@ -234,6 +238,26 @@
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new Size(132, 23);
             comboBox1.TabIndex = 0;
+            // 
+            // InfiniteScroll
+            // 
+            InfiniteScroll.AutoSize = true;
+            InfiniteScroll.Location = new Point(520, 28);
+            InfiniteScroll.Name = "InfiniteScroll";
+            InfiniteScroll.Size = new Size(97, 19);
+            InfiniteScroll.TabIndex = 8;
+            InfiniteScroll.Text = "Infinite-Scroll";
+            InfiniteScroll.UseVisualStyleBackColor = true;
+            // 
+            // FilterWebSearch
+            // 
+            FilterWebSearch.AutoSize = true;
+            FilterWebSearch.Location = new Point(426, 28);
+            FilterWebSearch.Name = "FilterWebSearch";
+            FilterWebSearch.Size = new Size(88, 19);
+            FilterWebSearch.TabIndex = 9;
+            FilterWebSearch.Text = "Web Search";
+            FilterWebSearch.UseVisualStyleBackColor = true;
             // 
             // ModDownloaderForm
             // 
@@ -270,10 +294,12 @@
         private ComboBox comboBox1;
         private ComboBox selectedVersionBox;
         private Button DownloadSelectButton;
-        private Label label1;
-        private Label label2;
+        private Label VersionLabel;
+        private Label SortLabel;
         private Button DownloadConfirmButton;
         private CheckBox FilterDescription;
         private CheckBox FilterName;
+        private CheckBox FilterWebSearch;
+        private CheckBox InfiniteScroll;
     }
 }

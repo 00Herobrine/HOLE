@@ -16,12 +16,12 @@ namespace HOLE.Assets.Scripts.Utils
             return filePaths.ToArray();
         }
 
-        public static string CreateJunction(string sourcePath, string targetPath) // symlink without the admin privileges
+        public static bool CreateJunction(string sourcePath, string targetPath) // symlink without the admin privileges
         {
-            Debug.WriteLine("Creating Junction for " + sourcePath);
+            //Logger.Info($"Creating junction for '{sourcePath}'");
             if (File.Exists(sourcePath))
             {
-                Debug.WriteLine($"Existing File for path");
+                Logger.Warn($"Existing File for path");
                 string fileName = Path.GetFileName(sourcePath);
                 string shortName = fileName.Split(".")[0];
                 DirectoryInfo di = Directory.GetParent(sourcePath)!.CreateSubdirectory(shortName); // change it to mod name possibly, fileName works similarly
@@ -48,24 +48,14 @@ namespace HOLE.Assets.Scripts.Utils
                 process.WaitForExit();
                 process.Close();
 
-                return "Junction created successfully!";
+                Logger.Info($"Created junction '{sourcePath}' successfully!");
+                return true;
             }
             catch (Exception ex)
             {
-                return $"Failed to create junction. Error: {ex.Message}";
+                Logger.Warn($"Failed to create junction\n'{ex.Message}'");
+                return false;
             }
-        }
-        public static VersionStatus VersionComparison(string newVersion, string oldVersion) => VersionComparison(Version.Parse(newVersion), Version.Parse(oldVersion));
-        public static VersionStatus VersionComparison(Version version1, Version version2)
-        {
-            int state = version1.CompareTo(version2);
-            return state switch
-            {
-                0 => VersionStatus.Match,
-                1 => VersionStatus.Newer,
-                -1 => VersionStatus.Outdated,
-                _ => VersionStatus.None,
-            };
         }
     }
 }

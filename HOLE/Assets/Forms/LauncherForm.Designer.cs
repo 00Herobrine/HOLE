@@ -38,12 +38,12 @@
             InstanceStrip = new ToolStrip();
             InstanceIcon = new ToolStripButton();
             InstanceName = new ToolStripButton();
-            LaunchButton = new ToolStripButton();
-            KillButton = new ToolStripButton();
             GroupButton = new ToolStripDropDownButton();
             enterGroupNameToolStripMenuItem = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             toolStripComboBox1 = new ToolStripComboBox();
+            LaunchButton = new ToolStripButton();
+            KillButton = new ToolStripButton();
             toolStripSeparator1 = new ToolStripSeparator();
             EditButton = new ToolStripButton();
             FolderButton = new ToolStripButton();
@@ -54,19 +54,21 @@
             toolStripSeparator3 = new ToolStripSeparator();
             downloadModsButton = new ToolStripButton();
             toolStrip = new ToolStrip();
-            toolStripButton1 = new ToolStripButton();
-            AddInstanceButton = new ToolStripDropDownButton();
+            AddInstanceButton = new ToolStripButton();
+            AddFIKAButton = new ToolStripDropDownButton();
             clientToolStripMenuItem = new ToolStripMenuItem();
             serverToolStripMenuItem = new ToolStripMenuItem();
             FoldersButton = new ToolStripDropDownButton();
             launcherToolStripMenuItem = new ToolStripMenuItem();
-            iconsToolStripMenuItem = new ToolStripMenuItem();
-            modsToolStripMenuItem = new ToolStripMenuItem();
             instancesToolStripMenuItem = new ToolStripMenuItem();
             SettingsButton = new ToolStripButton();
             UpdateButton = new ToolStripButton();
             CatButton = new ToolStripButton();
             ProfileButton = new ToolStripDropDownButton();
+            modsToolStripMenuItem = new ToolStripMenuItem();
+            instanceIconsToolStripMenuItem = new ToolStripMenuItem();
+            logsToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator4 = new ToolStripSeparator();
             toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.RightToolStripPanel.SuspendLayout();
@@ -180,26 +182,6 @@
             InstanceName.Size = new Size(118, 19);
             InstanceName.Text = "Instance Name";
             // 
-            // LaunchButton
-            // 
-            LaunchButton.Image = (Image)resources.GetObject("LaunchButton.Image");
-            LaunchButton.ImageAlign = ContentAlignment.MiddleLeft;
-            LaunchButton.ImageTransparentColor = Color.Magenta;
-            LaunchButton.Name = "LaunchButton";
-            LaunchButton.Size = new Size(118, 20);
-            LaunchButton.Text = "Launch";
-            LaunchButton.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // KillButton
-            // 
-            KillButton.Image = (Image)resources.GetObject("KillButton.Image");
-            KillButton.ImageAlign = ContentAlignment.MiddleLeft;
-            KillButton.ImageTransparentColor = Color.Magenta;
-            KillButton.Name = "KillButton";
-            KillButton.Size = new Size(118, 20);
-            KillButton.Text = "Kill";
-            KillButton.TextAlign = ContentAlignment.MiddleLeft;
-            // 
             // GroupButton
             // 
             GroupButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
@@ -224,6 +206,26 @@
             // 
             toolStripComboBox1.Name = "toolStripComboBox1";
             toolStripComboBox1.Size = new Size(121, 23);
+            // 
+            // LaunchButton
+            // 
+            LaunchButton.Image = (Image)resources.GetObject("LaunchButton.Image");
+            LaunchButton.ImageAlign = ContentAlignment.MiddleLeft;
+            LaunchButton.ImageTransparentColor = Color.Magenta;
+            LaunchButton.Name = "LaunchButton";
+            LaunchButton.Size = new Size(118, 20);
+            LaunchButton.Text = "Launch";
+            LaunchButton.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // KillButton
+            // 
+            KillButton.Image = (Image)resources.GetObject("KillButton.Image");
+            KillButton.ImageAlign = ContentAlignment.MiddleLeft;
+            KillButton.ImageTransparentColor = Color.Magenta;
+            KillButton.Name = "KillButton";
+            KillButton.Size = new Size(118, 20);
+            KillButton.Text = "Kill";
+            KillButton.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // toolStripSeparator1
             // 
@@ -307,7 +309,7 @@
             // toolStrip
             // 
             toolStrip.Dock = DockStyle.None;
-            toolStrip.Items.AddRange(new ToolStripItem[] { toolStripButton1, AddInstanceButton, FoldersButton, SettingsButton, UpdateButton, CatButton, ProfileButton });
+            toolStrip.Items.AddRange(new ToolStripItem[] { AddInstanceButton, AddFIKAButton, FoldersButton, SettingsButton, UpdateButton, CatButton, ProfileButton });
             toolStrip.Location = new Point(0, 0);
             toolStrip.Name = "toolStrip";
             toolStrip.RenderMode = ToolStripRenderMode.System;
@@ -316,22 +318,22 @@
             toolStrip.TabIndex = 0;
             toolStrip.Text = "toolStrip1";
             // 
-            // toolStripButton1
-            // 
-            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
-            toolStripButton1.ImageTransparentColor = Color.Magenta;
-            toolStripButton1.Name = "toolStripButton1";
-            toolStripButton1.Size = new Size(96, 22);
-            toolStripButton1.Text = "Add Instance";
-            // 
             // AddInstanceButton
             // 
-            AddInstanceButton.DropDownItems.AddRange(new ToolStripItem[] { clientToolStripMenuItem, serverToolStripMenuItem });
             AddInstanceButton.Image = (Image)resources.GetObject("AddInstanceButton.Image");
             AddInstanceButton.ImageTransparentColor = Color.Magenta;
             AddInstanceButton.Name = "AddInstanceButton";
-            AddInstanceButton.Size = new Size(85, 22);
-            AddInstanceButton.Text = "Add FIKA";
+            AddInstanceButton.Size = new Size(96, 22);
+            AddInstanceButton.Text = "Add Instance";
+            // 
+            // AddFIKAButton
+            // 
+            AddFIKAButton.DropDownItems.AddRange(new ToolStripItem[] { clientToolStripMenuItem, serverToolStripMenuItem });
+            AddFIKAButton.Image = (Image)resources.GetObject("AddFIKAButton.Image");
+            AddFIKAButton.ImageTransparentColor = Color.Magenta;
+            AddFIKAButton.Name = "AddFIKAButton";
+            AddFIKAButton.Size = new Size(85, 22);
+            AddFIKAButton.Text = "Add FIKA";
             // 
             // clientToolStripMenuItem
             // 
@@ -347,7 +349,7 @@
             // 
             // FoldersButton
             // 
-            FoldersButton.DropDownItems.AddRange(new ToolStripItem[] { launcherToolStripMenuItem, instancesToolStripMenuItem });
+            FoldersButton.DropDownItems.AddRange(new ToolStripItem[] { launcherToolStripMenuItem, instancesToolStripMenuItem, modsToolStripMenuItem, instanceIconsToolStripMenuItem, toolStripSeparator4, logsToolStripMenuItem });
             FoldersButton.Image = (Image)resources.GetObject("FoldersButton.Image");
             FoldersButton.ImageTransparentColor = Color.Magenta;
             FoldersButton.Name = "FoldersButton";
@@ -356,27 +358,14 @@
             // 
             // launcherToolStripMenuItem
             // 
-            launcherToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { iconsToolStripMenuItem, modsToolStripMenuItem });
             launcherToolStripMenuItem.Name = "launcherToolStripMenuItem";
-            launcherToolStripMenuItem.Size = new Size(123, 22);
+            launcherToolStripMenuItem.Size = new Size(149, 22);
             launcherToolStripMenuItem.Text = "Launcher";
-            // 
-            // iconsToolStripMenuItem
-            // 
-            iconsToolStripMenuItem.Name = "iconsToolStripMenuItem";
-            iconsToolStripMenuItem.Size = new Size(104, 22);
-            iconsToolStripMenuItem.Text = "Icons";
-            // 
-            // modsToolStripMenuItem
-            // 
-            modsToolStripMenuItem.Name = "modsToolStripMenuItem";
-            modsToolStripMenuItem.Size = new Size(104, 22);
-            modsToolStripMenuItem.Text = "Mods";
             // 
             // instancesToolStripMenuItem
             // 
             instancesToolStripMenuItem.Name = "instancesToolStripMenuItem";
-            instancesToolStripMenuItem.Size = new Size(123, 22);
+            instancesToolStripMenuItem.Size = new Size(149, 22);
             instancesToolStripMenuItem.Text = "Instances";
             // 
             // SettingsButton
@@ -413,6 +402,29 @@
             ProfileButton.Size = new Size(105, 22);
             ProfileButton.Text = "Profile Name";
             ProfileButton.ToolTipText = " ";
+            // 
+            // modsToolStripMenuItem
+            // 
+            modsToolStripMenuItem.Name = "modsToolStripMenuItem";
+            modsToolStripMenuItem.Size = new Size(149, 22);
+            modsToolStripMenuItem.Text = "Mods";
+            // 
+            // instanceIconsToolStripMenuItem
+            // 
+            instanceIconsToolStripMenuItem.Name = "instanceIconsToolStripMenuItem";
+            instanceIconsToolStripMenuItem.Size = new Size(149, 22);
+            instanceIconsToolStripMenuItem.Text = "Instance Icons";
+            // 
+            // logsToolStripMenuItem
+            // 
+            logsToolStripMenuItem.Name = "logsToolStripMenuItem";
+            logsToolStripMenuItem.Size = new Size(149, 22);
+            logsToolStripMenuItem.Text = "Logs";
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(146, 6);
             // 
             // LauncherForm
             // 
@@ -467,15 +479,17 @@
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripDropDownButton FoldersButton;
         private ToolStripMenuItem launcherToolStripMenuItem;
-        private ToolStripMenuItem iconsToolStripMenuItem;
-        private ToolStripMenuItem modsToolStripMenuItem;
         private ToolStripMenuItem instancesToolStripMenuItem;
         private ToolStripDropDownButton ProfileButton;
-        private ToolStripButton toolStripButton1;
-        private ToolStripDropDownButton AddInstanceButton;
+        private ToolStripButton AddInstanceButton;
+        private ToolStripDropDownButton AddFIKAButton;
         private ToolStripMenuItem clientToolStripMenuItem;
         private ToolStripMenuItem serverToolStripMenuItem;
         private ToolStripButton downloadModsButton;
         private ToolStripSeparator toolStripSeparator3;
+        private ToolStripMenuItem modsToolStripMenuItem;
+        private ToolStripMenuItem instanceIconsToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator4;
+        private ToolStripMenuItem logsToolStripMenuItem;
     }
 }
