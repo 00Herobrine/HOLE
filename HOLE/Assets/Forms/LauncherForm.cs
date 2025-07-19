@@ -28,8 +28,8 @@ namespace HOLE.Assets.Forms
 
         private async void LoadInstances()
         {
-            List<Instance> instances = new();
-            instances = await InstanceManager.GetInstances();
+            InstanceManager.LoadInstances();
+            List<Instance> instances = InstanceManager.GetInstances();
             InstancesView.Items.Clear();
             foreach (Instance instance in instances)
             {

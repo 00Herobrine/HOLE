@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using HOLE.Assets.Scripts.Utils;
 
 namespace HOLE.Assets.Scripts
 {
@@ -9,6 +10,7 @@ namespace HOLE.Assets.Scripts
         public string BepInExPath => Path.Combine(InstancePath, "BepInEx");
         public string PluginsPath => Path.Combine(BepInExPath, "plugins");
         public string UserPath => Path.Combine(InstancePath, "user");
+        public string ServerExePath => Path.Combine(InstancePath, "spt.server.exe");
         public string UserCachePath => Path.Combine(UserPath, "cache");
         public string ModsPath => Path.Combine(UserPath, "mods");
         public string ProfilesPath => Path.Combine(UserPath, "profiles");
@@ -19,6 +21,7 @@ namespace HOLE.Assets.Scripts
             InstancePath = instancePath;
             Name = InstancePath.Split(Path.DirectorySeparatorChar).Last();
         }
+        
     }
     public static class InstanceManager
     {
@@ -30,27 +33,24 @@ namespace HOLE.Assets.Scripts
 
         public static async void LoadInstances()
         {
-            if (!Directory.Exists(InstancesFolder))
-            {
-                Directory.CreateDirectory(InstancesFolder);
-            }
+            Instances = await LoadInstancesFromDirectory();
         }
 
-        public static async Task<List<Instance>> GetInstances()
+        private static async Task<List<Instance>> LoadInstancesFromDirectory()
         {
-            if(!Directory.Exists(InstancesFolder)) 
-            {
-                Directory.CreateDirectory(InstancesFolder);
-            }
-
+            FileManagement.DirectoryCheck(InstancesFolder);
             List<Instance> instances = [];
             foreach (var instanceFolder in Directory.GetDirectories(InstancesFolder))
             {
                 Instance instance = new Instance(instanceFolder);
                 instances.Add(instance);
             }
-            await Task.CompletedTask;
-            return instances;
+            return await Task.FromResult(instances);
+        }
+
+        public static List<Instance> GetInstances()
+        {
+            return Instances;
         }
 
         public static Instance? GetInstance(string instanceName)

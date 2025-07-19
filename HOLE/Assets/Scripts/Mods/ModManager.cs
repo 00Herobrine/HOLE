@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -67,35 +68,43 @@ namespace HOLE.Assets.Scripts.Mods
         public Dictionary<string, SPTVersionData> versions { get; set; }
     }
 
-    public struct SPTMod
+    public struct SPTMod(string id, string url, string name, string sptVersion,
+        string author, string teaser, string downloads, string commentCount,
+        string reactionCount, bool featured, DateTime lastUpdated, string? imageUrl = null)
     {
-        public string Url;
-        public string Name;
-        public string SPTVersion;
-        public string Author;
-        public string Teaser;
-        public string Downloads;
-        public string ReactionCount;
-        public DateTime LastUpdated;
-        // Need to Retrieve
-        public string? Version;
-        public string? Description;
-        public string? ImageUrl;
-        public string? IconPath;
+        public string Id = id;
+        public string Url = url;
+        public string Name = name;
+        public string SPTVersion = sptVersion;
+        public string Author = author;
+        public string Teaser = teaser;
+        public bool Featured = featured;
+        public DateTime LastUpdated = lastUpdated;
+        public string? Downloads = downloads;
+        public string? CommentCount = commentCount;
+        public string? ReactionCount = reactionCount;
+        public string? ImageUrl = imageUrl;
+        public readonly string? GetImageName() => ImageUrl != null ? Path.GetFileName(ImageUrl) : null;
+        public readonly string GetIconPath() => $"{Launcher.Config.Paths.Icons}{GetImageName()}";
+        public readonly bool HasImage() => ImageUrl != null || File.Exists(GetIconPath());
+        public readonly bool HasIconStored() => File.Exists(GetIconPath()); 
 
         public override string ToString()
         {
             StringBuilder sb = new();
             sb.AppendLine("SPTMod");
             sb.AppendLine("[");
+            sb.AppendLine($"{Id},");
             sb.AppendLine($"{Url},");
             sb.AppendLine($"{Name},");
             sb.AppendLine($"{SPTVersion},");
             sb.AppendLine($"{Author},");
             sb.AppendLine($"{Teaser},");
             sb.AppendLine($"{Downloads},");
+            sb.AppendLine($"{CommentCount},");
             sb.AppendLine($"{ReactionCount},");
-            sb.AppendLine($"{LastUpdated}");
+            sb.AppendLine($"{LastUpdated},");
+            sb.AppendLine($"{ImageUrl}(Cached: {File.Exists(GetIconPath())})");
             sb.AppendLine("]");
             return sb.ToString();
         }
@@ -114,16 +123,7 @@ namespace HOLE.Assets.Scripts.Mods
         public double AverageDownloadSpeed;
         public Stream ContentStream;
     }
-
-    public struct ModDownloadQuery(SPTModData modData)
-    {
-        public string Id = modData.id;
-        public string Name;
-        public string Version;
-        public string Author;
-        public string Description;
-        public long TotalBytes;
-    }
+    
     public static class ModManager
     {
         private const string SPTUrl = "https://hub.sp-tarkov.com/";
@@ -248,20 +248,59 @@ namespace HOLE.Assets.Scripts.Mods
             List<SPTMod> modList = new();
             foreach (HtmlNode modNode in modElements)
             {
+                string isoString = modNode.SelectSingleNode(".//time[@class='datetime']")
+                    ?.GetAttributeValue("datetime", "0L") ?? "0L";
+                DateTime dateTime = DateTime.ParseExact(isoString, "yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture);
                 SPTMod mod = new()
                 {
-                    Name = modNode.SelectSingleNode("//div[contains(@class, 'filebaseFileSubject')]")?.InnerText ?? "",
-                    SPTVersion = modNode.SelectSingleNode("//div[contains(@class, 'filebaseFileCardVersion')]")?.InnerText ?? "",
-                    Author = modNode.SelectSingleNode("//div[contains(@class, 'filebaseFileCardAuthor')]")?.InnerText ?? "",
-                    Teaser = modNode.SelectSingleNode("//div[contains(@class, 'filebaseFileTeaser')]")?.InnerText ?? "",
-                    Url = modNode.SelectSingleNode("//a[contains(@class, 'box128')]")?.Attributes["href"].Value ?? "",
-                    Downloads = modNode.SelectSingleNode("//span[contains(@class, 'fa-downloads')]")?.InnerText ?? "",
-                    ReactionCount = modNode.SelectSingleNode("//div[contains(@class, 'filebaseFileCardReactionCount')]")?.InnerText ?? "",
-                    LastUpdated = DateTime.Now,
+                    Id = modNode.ParentNode.GetAttributeValue("data-file-id", "").Trim(),
+                    Url = modNode.SelectSingleNode(".//a[contains(@class, 'box128')]")?.GetAttributeValue("href", "").Trim() ?? "null",
+                    Name = modNode.SelectSingleNode(".//h3[contains(@class, 'filebaseFileSubject')]")?.InnerText.Trim() ?? "null",
+                    SPTVersion = modNode.SelectSingleNode(".//ul[contains(@class, 'labelList')]/li[1]")?.InnerText.Trim() ?? "null",
+                    Author = modNode.SelectSingleNode(".//ul[contains(@class, 'filebaseFileMetaData')]/li[not(time)]")?.InnerText.Trim() ?? "null",
+                    Teaser = modNode.SelectSingleNode(".//div[contains(@class, 'filebaseFileTeaser')]")?.InnerText.Trim() ?? "null",
+                    Downloads = modNode.SelectSingleNode(".//span[contains(@class, 'fa-download')]")?.ParentNode.InnerText.Trim() ?? "null",
+                    CommentCount = modNode.SelectSingleNode(".//div[contains(@class, 'fa-comments')]")?.ParentNode.InnerText.Trim() ?? "null",
+                    //ReactionCount = modNode.SelectNodes(".//div[contains(@class, 'filebaseFileCardReactionCount')]")?.ToString() ?? "null",
+                    LastUpdated = dateTime,
+                    Featured = modNode.SelectSingleNode(".//span[contains(@class, 'jsLabelFeatured')]") != null,
+                    ImageUrl = modNode.SelectSingleNode(".//span[@class='filebaseFileIcon']/img")?.GetAttributeValue("src", "") ?? null,
                 };
                 modList.Add(mod);
+                if(mod.ImageUrl != null) await CacheModIcon(mod.ImageUrl); 
             }
             return modList;
+        }
+
+        public static async Task<bool> CacheModIcon(string iconUrl)
+        {
+            if (!FileManagement.DirectoryCheck(Launcher.Config.Paths.ModIcons) || !iconUrl.Contains(SPTUrl)) 
+                return false;
+            
+            string fileName = Path.GetFileName(iconUrl);
+            string filePath = Path.Combine(Launcher.Config.Paths.ModIcons, fileName);
+            Logger.Info($"Caching {filePath}");
+            if (File.Exists(filePath)) 
+                return true;
+            try
+            {
+                using HttpClient client = new();
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+                HttpResponseMessage response = await client.GetAsync(iconUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    await using Stream contentStream = await response.Content.ReadAsStreamAsync();
+                    await using FileStream fileStream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                    await contentStream.CopyToAsync(fileStream);
+                    return true;
+                }
+                else return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Warn($"Failed to cache mod icon: {e.Message}");
+                return false;
+            }
         }
         
         // Going through the main page is required to generate a token to submit to the page
@@ -371,6 +410,7 @@ namespace HOLE.Assets.Scripts.Mods
             response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
             // Possible Direct File from Download Page
             Logger.Info($"modDownload {modDownload != null}");
+            //modDownload.stream = GetContentStream(response);
             modDownload ??= await GetFileFromResponseAsync(response);
             if (modDownload != null)
                 await ScheduleDownload(modDownload.Value, await response.Content.ReadAsStreamAsync(), new byte[DownloadBufferSize]);

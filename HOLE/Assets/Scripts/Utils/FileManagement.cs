@@ -57,5 +57,20 @@ namespace HOLE.Assets.Scripts.Utils
                 return false;
             }
         }
+        
+        public static bool DirectoryCheck(string folderPath)
+        {
+            try
+            {
+                if (Directory.Exists(folderPath)) return false;
+                Directory.CreateDirectory(folderPath);
+                Logger.Info($"Created directory '{folderPath}'");
+                return true;
+            } catch (Exception ex)
+            {
+                Logger.Warn($"Failed to create directory '{folderPath}'.\n'{ex.Message}'");
+            }
+            return false;
+        }
     }
 }

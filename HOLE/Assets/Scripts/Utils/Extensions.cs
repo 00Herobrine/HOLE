@@ -17,6 +17,13 @@ public static class Extensions
         else
             return value.ToString();
     }
+
+    public static bool IsValid(this Instance instance)
+    {
+        return Path.Exists(instance.BepInExPath)
+            && Path.Exists(instance.ServerExePath);
+    }
+
     public static VersionStatus VersionComparison(string newVersion, string oldVersion) => VersionComparison(Version.Parse(newVersion), Version.Parse(oldVersion));
     public static VersionStatus VersionComparison(Version version1, Version version2)
     {
