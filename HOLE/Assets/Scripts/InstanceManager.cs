@@ -5,35 +5,35 @@ namespace HOLE.Assets.Scripts
 {
     public class Instance
     {
-        public readonly string InstancePath;
+        public readonly string Folder;
         public readonly string Name;
-        public string BepInExPath => Path.Combine(InstancePath, "BepInEx");
+        public string BepInExPath => Path.Combine(Folder, "BepInEx");
         public string PluginsPath => Path.Combine(BepInExPath, "plugins");
-        public string UserPath => Path.Combine(InstancePath, "user");
-        public string ServerExePath => Path.Combine(InstancePath, "spt.server.exe");
+        public string UserPath => Path.Combine(Folder, "user");
+        public string ServerExePath => Path.Combine(Folder, "spt.server.exe");
         public string UserCachePath => Path.Combine(UserPath, "cache");
         public string ModsPath => Path.Combine(UserPath, "mods");
         public string ProfilesPath => Path.Combine(UserPath, "profiles");
 
         public Process[] GameProcess { get; private set; } = [];
-        public Instance(string instancePath)
+        public Instance(string folder)
         {
-            InstancePath = instancePath;
-            Name = InstancePath.Split(Path.DirectorySeparatorChar).Last();
+            Folder = folder;
+            Name = Folder.Split(Path.DirectorySeparatorChar).Last();
         }
         
     }
     public static class InstanceManager
     {
         public static string InstancesFolder => Launcher.Config.Paths.Instances;
-        private static List<Instance> Instances = new();
+        private static List<Instance> _instances = new();
         //public static InstanceFolder SelectedInstance { get; private set; }
         //public static Action? InstancesLoadedEvent;
         //public static Action? InstanceSelectedEvent;
 
         public static async void LoadInstances()
         {
-            Instances = await LoadInstancesFromDirectory();
+            _instances = await LoadInstancesFromDirectory();
         }
 
         private static async Task<List<Instance>> LoadInstancesFromDirectory()
@@ -50,7 +50,7 @@ namespace HOLE.Assets.Scripts
 
         public static List<Instance> GetInstances()
         {
-            return Instances;
+            return _instances;
         }
 
         public static Instance? GetInstance(string instanceName)
@@ -80,6 +80,21 @@ namespace HOLE.Assets.Scripts
             string oldDir = Path.Combine(InstancesFolder, instanceName);
             string newDir = Path.Combine(InstancesFolder, updatedName);
             Directory.Move(oldDir, newDir);
+        }
+
+        public static bool IsValidInstance(string instanceName, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
+        {
+            foreach (Instance instance in _instances)
+            {
+                if (!instance.Name.Equals(instanceName, comparisonType)) continue;
+                return IsValidInstance(instance);
+            }
+            return false;
+        }
+        public static bool IsValidInstance(Instance instance)
+        {
+            return Path.Exists(instance.BepInExPath)
+                   && Path.Exists(instance.ServerExePath);
         }
     }
 }

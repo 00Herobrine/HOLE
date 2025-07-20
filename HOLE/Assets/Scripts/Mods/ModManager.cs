@@ -7,6 +7,11 @@ using System.Text.RegularExpressions;
 using HOLE.Assets.Scripts.Utils;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
+using SharpCompress.Archives;
+using SharpCompress.Archives.SevenZip;
+using SharpCompress.Archives.Zip;
+using SharpCompress.Common;
+using SharpCompress.Readers;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -22,7 +27,6 @@ namespace HOLE.Assets.Scripts.Mods
     public enum UrlOrigin
     {
         Invalid,
-        Unsupported,
         Direct,
         [Description("dropbox.com")]
         Dropbox,
@@ -84,10 +88,12 @@ namespace HOLE.Assets.Scripts.Mods
         public string? CommentCount = commentCount;
         public string? ReactionCount = reactionCount;
         public string? ImageUrl = imageUrl;
-        public readonly string? GetImageName() => ImageUrl != null ? Path.GetFileName(ImageUrl) : null;
-        public readonly string GetIconPath() => $"{Launcher.Config.Paths.Icons}{GetImageName()}";
         public readonly bool HasImage() => ImageUrl != null || File.Exists(GetIconPath());
         public readonly bool HasIconStored() => File.Exists(GetIconPath()); 
+        public readonly string? GetImageName() => ImageUrl != null ? Path.GetFileName(ImageUrl) : null;
+        public readonly string? GetIconPath() => GetImageName() != null
+            ? Path.Combine(Launcher.Config.Paths.ModIcons, GetImageName()!)
+            : null;
 
         public override string ToString()
         {
@@ -104,10 +110,31 @@ namespace HOLE.Assets.Scripts.Mods
             sb.AppendLine($"{CommentCount},");
             sb.AppendLine($"{ReactionCount},");
             sb.AppendLine($"{LastUpdated},");
-            sb.AppendLine($"{ImageUrl}(Cached: {File.Exists(GetIconPath())})");
+            sb.AppendLine($"{ImageUrl}(Cached: {HasIconStored()} {GetIconPath()})");
             sb.AppendLine("]");
             return sb.ToString();
         }
+    }
+    
+    public enum SortOrder
+    {
+        [Description("Descending")]
+        DESC,
+        [Description("Ascending")]
+        ASC,
+    }
+
+    public enum SortBy
+    {
+        Relevance,
+        Subject,
+        Time,
+        Author,
+    }
+    public struct SortFilter(SortBy sortBy = SortBy.Relevance, SortOrder sortOrder = SortOrder.DESC)
+    {
+        public SortBy SortBy = sortBy;
+        public SortOrder SortOrder = sortOrder;
     }
     
     public struct ModDownload(string filePath)
@@ -126,6 +153,10 @@ namespace HOLE.Assets.Scripts.Mods
     
     public static class ModManager
     {
+        public const string FikaUrl = "https://github.com/project-fika/";
+        public const string FikaWikiUrl = "https://github.com/project-fika/gitbook-wiki";
+        public const string FikaClientUrl = "https://github.com/project-fika/Fika-Plugin";
+        public const string FikaServerUrl = "https://github.com/project-fika/Fika-Server";
         private const string SPTUrl = "https://hub.sp-tarkov.com/";
         private const string SPTModListBaseUrl = $"{SPTUrl}files/";
         private const string SPTModsJsonUrl = $"{SPTUrl}mods.json";
@@ -134,6 +165,8 @@ namespace HOLE.Assets.Scripts.Mods
         private const string BaseDirectGoogleLink = "https://drive.google.com/uc?export=download&id=";
         private const string Pattern = @"var SECURITY_TOKEN = '(.+?)';"; 
         private const string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36";
+        private const string BepInExFolderName = "BepInEx";
+        private const string UserFolderName = "user";
         private static readonly string[] AllowedFileTypes = [".rar", ".7z", ".zip", ".dll"];
         
         private static int DownloadBufferSize => Launcher.Config.ModDownloadBufferSize;
@@ -144,7 +177,7 @@ namespace HOLE.Assets.Scripts.Mods
         public static int TotalCachedMods { get; private set; }
 
         #region Downloader
-        private static Dictionary<int, ModDownload> _currentDownloads; // Id, ModDownload (maybe I should just iterate through them all instead of having a dictionary)
+        private static Dictionary<int, ModDownload> _currentDownloads = new(); // Id, ModDownload (maybe I should just iterate through them all instead of having a dictionary)
 
         public static async void ScheduleDownloadAsync(int modId)
         {
@@ -163,6 +196,7 @@ namespace HOLE.Assets.Scripts.Mods
                 Logger.Warn("Failed to Schedule Mod Download"); // TODO: add this to lang file
             }
         }
+        
         #region Queries
         // Queries the basic mods.json list which is super light
         private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
@@ -185,28 +219,6 @@ namespace HOLE.Assets.Scripts.Mods
                 Logger.Warn($"Failed to parse mods.json: {ex.Message}");
             }
             return null;
-        }
-
-
-        public enum SortOrder
-        {
-            [Description("Descending")]
-            DESC,
-            [Description("Ascending")]
-            ASC,
-        }
-
-        public enum SortBy
-        {
-            Relevance,
-            Subject,
-            Time,
-            Author,
-        }
-        public struct SortFilter(SortBy sortBy = SortBy.Relevance, SortOrder sortOrder = SortOrder.DESC)
-        {
-            public SortBy SortBy = sortBy;
-            public SortOrder SortOrder = sortOrder;
         }
         
         // Goes through the main SPT page like a normal user
@@ -272,7 +284,7 @@ namespace HOLE.Assets.Scripts.Mods
             return modList;
         }
 
-        public static async Task<bool> CacheModIcon(string iconUrl)
+        private static async Task<bool> CacheModIcon(string iconUrl)
         {
             if (!FileManagement.DirectoryCheck(Launcher.Config.Paths.ModIcons) || !iconUrl.Contains(SPTUrl)) 
                 return false;
@@ -417,6 +429,7 @@ namespace HOLE.Assets.Scripts.Mods
             return modDownload;
         }
         #endregion
+        
         public static async Task<SPTModsData> GetSPTModDataAsync(bool forceQuery = false)
         {
             if(forceQuery) _sptModData = null;
@@ -483,7 +496,7 @@ namespace HOLE.Assets.Scripts.Mods
                 return null;
             
             string extension = Path.GetExtension(fileName);
-            if (!IsValidFileType(extension.TrimEnd()))
+            if (!IsAllowedFileType(extension.TrimEnd()))
             {
                 Logger.Warn($"Invalid file type: {extension}");
                 return null;
@@ -510,10 +523,114 @@ namespace HOLE.Assets.Scripts.Mods
             Task.FromResult(response.Content.Headers.ContentDisposition != null);
         #endregion
         
-        #region Installer
-        public static async Task<bool> InstallModAsync(string localModFile)
+        #region Extractor
+        public static async Task<bool> ExtractModAsync(string downloadedModFile)
         {
+            // open mod.
+            // check through all entries for a BepInEx folder and/or a user folder
+            // if properly formatted, extract to the mods directory.
+            // else need to manually determine BepInEx and user Files.
+            // I want to start enforcing people to add a "dependencies" file in the root archive
+            // which allows specifying what mods to download by their id
+            if (!File.Exists(downloadedModFile)) 
+                return false;
+                    
+            string fileType = Path.GetExtension(downloadedModFile);
+            if (!IsAllowedFileType(fileType)) 
+                return false;
+
+            return fileType switch
+            {
+                ".dll" => await ExtractDllModAsync(downloadedModFile),
+                ".zip" => await ExtractArchiveModAsync(downloadedModFile),
+                ".rar" => await ExtractRarModAsync(downloadedModFile),
+                ".7z" => await Extract7zModAsync(downloadedModFile),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        private static async Task<bool> ExtractDllModAsync(string localModFile)
+        {
+            if (!File.Exists(localModFile))
+                return false;
             
+            File.Move(localModFile, Path.Combine(Launcher.Config.Paths.Mods, Path.GetFileName(localModFile)));
+            return await Task.FromResult(true);
+        }
+        private static async Task<bool> ExtractZipModAsync(string localModFile) => await ExtractArchiveModAsync(localModFile);
+        private static async Task<bool> Extract7zModAsync(string localModFile) => await ExtractArchiveModAsync(localModFile);
+        private static async Task<bool> ExtractRarModAsync(string localModFile) => await ExtractArchiveModAsync(localModFile);
+        private static async Task<bool> ExtractArchiveModAsync(string localModFile)
+        {
+            if (!File.Exists(localModFile)) 
+                return false;
+            
+            if (!FileManagement.DirectoryCheck(Launcher.Config.Paths.Mods))
+                return false;
+            
+            string modFileName = Path.GetFileNameWithoutExtension(localModFile);
+            string destinationPath = Path.Combine(Launcher.Config.Paths.Mods, modFileName);
+            if (!FileManagement.DirectoryCheck(destinationPath))
+                return false;
+            try
+            {
+                IArchive archive = ArchiveFactory.Open(localModFile);
+                foreach (IArchiveEntry entry in archive.Entries)
+                {
+                    if (string.IsNullOrEmpty(entry.Key)) 
+                        continue;
+
+                    string rootFolderName = entry.Key.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).First();
+                    string entryType = Path.GetExtension(entry.Key);
+                    bool isDll = entryType.Equals(".dll", StringComparison.OrdinalIgnoreCase);
+                    Logger.Info($"entryKey: {entry.Key} RootFolder: {rootFolderName} isDll: {isDll}");
+                    if (rootFolderName.Equals(BepInExFolderName, StringComparison.OrdinalIgnoreCase) 
+                        || rootFolderName.Equals(UserFolderName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Logger.Info($"Destination: {destinationPath}");
+                        entry.WriteToDirectory(destinationPath, new ExtractionOptions()
+                        {
+                            Overwrite = true,
+                            ExtractFullPath = true,
+                            PreserveAttributes = true,
+                            PreserveFileTime = false,
+                        });
+                    }
+                    else if (isDll)
+                    {
+                        destinationPath = Path.Combine(Launcher.Config.Paths.Mods, modFileName, "BepInEx", "plugins");
+                        FileManagement.DirectoryCheck(destinationPath);
+                        entry.WriteToDirectory(destinationPath, new ExtractionOptions()
+                        {
+                            Overwrite = true,
+                            ExtractFullPath = false,
+                            PreserveAttributes = true,
+                            PreserveFileTime = false,
+                        });
+                    }
+                }
+            } catch (Exception e)
+            {
+                Logger.Warn($"Failed to Install ZIP Mod.\n{e.Message}");
+            }
+            return await Task.FromResult(false);
+        }
+        #endregion
+        
+        #region Installer
+        private static async Task<bool> InstallDllModAsync(string localModFile, Instance instance, bool createJunction = true)
+        {
+            try
+            {
+                if (createJunction)
+                {
+                    FileManagement.CreateJunction(localModFile, instance.BepInExPath);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warn($"Failed to Install DLL Mod.\n{e.Message}");
+            }
             return await Task.FromResult(false);
         }
         #endregion
@@ -526,7 +643,7 @@ namespace HOLE.Assets.Scripts.Mods
         }
         #endregion
 
-        private static bool IsValidFileType(string extension) 
+        private static bool IsAllowedFileType(string extension) 
             => AllowedFileTypes.Contains(extension);
     }
 }

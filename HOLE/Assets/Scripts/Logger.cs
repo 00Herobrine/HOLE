@@ -45,7 +45,7 @@ namespace HOLE.Assets.Scripts
             foreach(string arg in args)
             {
                 string logFormat = Launcher.Config.LogFormat;
-                string formattedMessage = logFormat.Replace("{Prefix}", Prefix).Replace("{Level}", logLevel.ToString()).Replace("{Message}", arg);
+                string formattedMessage = logFormat.Replace("{Prefix}", prefix.Prefix).Replace("{Level}", logLevel.ToString()).Replace("{Message}", arg);
                 Debug.WriteLine(formattedMessage);
             }
         }

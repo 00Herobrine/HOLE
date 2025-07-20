@@ -6,6 +6,8 @@ namespace HOLE.Assets.Scripts.Utils;
 
 public static class Extensions
 {
+    public static bool IsValid(this Instance instance) => InstanceManager.IsValidInstance(instance);
+    
     public static string GetDescription(this Enum value)
     {
         FieldInfo? fi = value.GetType().GetField(value.ToString());
@@ -16,12 +18,6 @@ public static class Extensions
             return attributes[0].Description;
         else
             return value.ToString();
-    }
-
-    public static bool IsValid(this Instance instance)
-    {
-        return Path.Exists(instance.BepInExPath)
-            && Path.Exists(instance.ServerExePath);
     }
 
     public static VersionStatus VersionComparison(string newVersion, string oldVersion) => VersionComparison(Version.Parse(newVersion), Version.Parse(oldVersion));

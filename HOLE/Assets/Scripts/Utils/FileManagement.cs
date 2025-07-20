@@ -18,17 +18,19 @@ namespace HOLE.Assets.Scripts.Utils
 
         public static bool CreateJunction(string sourcePath, string targetPath) // symlink without the admin privileges
         {
-            //Logger.Info($"Creating junction for '{sourcePath}'");
-            if (File.Exists(sourcePath))
+            if (!File.Exists(sourcePath)) 
+                return false;
+            
+            string fullFileName = Path.GetFileName(sourcePath);
+            string shortFileName = Path.GetFileNameWithoutExtension(sourcePath);
+            /*if (File.Exists(sourcePath)) // This shouldn't be here as mods should be extracted to their own folders prior to junction
             {
-                Logger.Warn($"Existing File for path");
-                string fileName = Path.GetFileName(sourcePath);
-                string shortName = fileName.Split(".")[0];
-                DirectoryInfo di = Directory.GetParent(sourcePath)!.CreateSubdirectory(shortName); // change it to mod name possibly, fileName works similarly
-                Debug.WriteLine("Writing file to " + di);
-                File.Move(sourcePath, Path.Combine(di.ToString(), fileName));
+                DirectoryInfo di = Directory.GetParent(sourcePath)!.CreateSubdirectory(shortFileName); // change to use mod name possibly
+                Logger.Info("Writing file to " + di);
+                File.Move(sourcePath, Path.Combine(di.ToString(), fullFileName));
                 sourcePath = di.ToString();
-            }
+            }*/
+            
             try
             {
                 Process process = new Process();
@@ -41,7 +43,7 @@ namespace HOLE.Assets.Scripts.Utils
                 StreamWriter sw = process.StandardInput;
                 if (sw.BaseStream.CanWrite)
                 {
-                    sw.WriteLine($"mklink /J \"{Path.Combine(targetPath, Path.GetFileName(sourcePath))}\" \"{sourcePath}\"");
+                    sw.WriteLine($"mklink /J \"{Path.Combine(targetPath, shortFileName)}\" \"{sourcePath}\"");
                     sw.WriteLine("exit");
                 }
 
@@ -60,12 +62,12 @@ namespace HOLE.Assets.Scripts.Utils
         
         public static bool DirectoryCheck(string folderPath)
         {
+            if (Directory.Exists(folderPath)) return true;
             try
             {
-                if (Directory.Exists(folderPath)) return false;
                 Directory.CreateDirectory(folderPath);
                 Logger.Info($"Created directory '{folderPath}'");
-                return true;
+                if (Directory.Exists(folderPath)) return true;
             } catch (Exception ex)
             {
                 Logger.Warn($"Failed to create directory '{folderPath}'.\n'{ex.Message}'");
