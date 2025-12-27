@@ -1,17 +1,15 @@
-﻿using System.ComponentModel;
+﻿using HOLE.Assets.Forms;
+using HOLE.Assets.Scripts.Utils;
+using HtmlAgilityPack;
+using Newtonsoft.Json;
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using HOLE.Assets.Scripts.Utils;
-using HtmlAgilityPack;
-using Newtonsoft.Json;
-using SharpCompress.Archives;
-using SharpCompress.Archives.SevenZip;
-using SharpCompress.Archives.Zip;
-using SharpCompress.Common;
-using SharpCompress.Readers;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -39,6 +37,11 @@ namespace HOLE.Assets.Scripts.Mods
         [Description("sp-tarkov.com")]
         SPT
     }
+
+    #region SPTData
+    // ModsJson is now outdated and should not be used
+    #region ModsJson
+    // Response from https://hub.sp-tarkov.com/mods.json
     public struct SPTModData
     {
         [JsonProperty("id")]
@@ -65,13 +68,25 @@ namespace HOLE.Assets.Scripts.Mods
         public int count { get; set; }
         public string colour { get; set; }
     }
-    public struct SPTModsData
+    public struct SPTModsJson
     {
         public SPTModData[] mod_data { get; set; }
         public string last_updated { get; set; } // time the list was updated server-side
         public Dictionary<string, SPTVersionData> versions { get; set; }
     }
-
+    #endregion
+    
+    #region Hub
+    public struct SPTModList // for local caching instead of querying each time
+    {
+        public List<SPTModListPage> Pages;
+    }
+    public struct SPTModListPage
+    {
+        public int PageNumber;
+        public List<SPTMod> Mods;
+        public DateTime TimeCached;
+    }
     public struct SPTMod(string id, string url, string name, string sptVersion,
         string author, string teaser, string downloads, string commentCount,
         string reactionCount, bool featured, DateTime lastUpdated, string? imageUrl = null)
@@ -115,15 +130,14 @@ namespace HOLE.Assets.Scripts.Mods
             return sb.ToString();
         }
     }
+    #endregion
     
-    public enum SortOrder
-    {
-        [Description("Descending")]
-        DESC,
-        [Description("Ascending")]
-        ASC,
-    }
-
+    #region Forge
+    // to do eventually?
+    #endregion
+    #endregion
+    
+    #region Filtering
     public enum SortBy
     {
         Relevance,
@@ -131,12 +145,21 @@ namespace HOLE.Assets.Scripts.Mods
         Time,
         Author,
     }
+    public enum SortOrder
+    {
+        [Description("Descending")]
+        DESC,
+        [Description("Ascending")]
+        ASC,
+    }
     public struct SortFilter(SortBy sortBy = SortBy.Relevance, SortOrder sortOrder = SortOrder.DESC)
     {
         public SortBy SortBy = sortBy;
         public SortOrder SortOrder = sortOrder;
     }
+    #endregion
     
+    #region Local Mod
     public struct ModDownload(string filePath)
     {
         public readonly string FilePath = filePath;
@@ -150,10 +173,55 @@ namespace HOLE.Assets.Scripts.Mods
         public double AverageDownloadSpeed;
         public Stream ContentStream;
     }
+
+    public struct Dependencies
+    {
+        
+    }
+
+    public struct Dependency
+    {
+        public int ModId;
+        public int VersionId;
+    }
+    public struct LocalMod(string modPath)
+    {
+        public readonly string ModPath = modPath;
+        public string[] Entries;
+        public string BepInEx => Path.Combine(ModPath, "BepInEx");
+        public string Plugins => Path.Combine(BepInEx, "plugins");
+        public string User => Path.Combine(ModPath, "user");
+        public string Mods => Path.Combine(User, "mods");
+        public string Config => Path.Combine(ModPath, "config.json");
+        public bool IsValid() => Directory.Exists(BepInEx) || Directory.Exists(User);
+    }
+    #endregion
+    
+    #region UI
+    public struct ModInfo
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Version { get; set; }
+        public string SPTVersion { get; set; }
+        public string Link { get; set; }
+        public string Featured { get; set; }
+        public string Downloads { get; set; }
+
+        public string GetDescription(bool forceQuery = false)
+        {
+            if (!string.IsNullOrEmpty(Description) || !forceQuery) 
+                return Description;
+            return "";
+        }
+    }
+    #endregion
     
     public static class ModManager
     {
         public const string FikaUrl = "https://github.com/project-fika/";
+        public const string FikaInstallerUrl = "https://github.com/project-fika/Fika-Installer";
         public const string FikaWikiUrl = "https://github.com/project-fika/gitbook-wiki";
         public const string FikaClientUrl = "https://github.com/project-fika/Fika-Plugin";
         public const string FikaServerUrl = "https://github.com/project-fika/Fika-Server";
@@ -167,40 +235,25 @@ namespace HOLE.Assets.Scripts.Mods
         private const string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36";
         private const string BepInExFolderName = "BepInEx";
         private const string UserFolderName = "user";
+        public const string ModFolderFormat = "{ModName}-{Version}";
         private static readonly string[] AllowedFileTypes = [".rar", ".7z", ".zip", ".dll"];
         
-        private static int DownloadBufferSize => Launcher.Config.ModDownloadBufferSize;
-        private static int ModCacheRefresh => Launcher.Config.ModCacheRefresh;
+        private static int DownloadBufferSize => Launcher.Config.Downloader.BufferSize;
+        private static int ModCacheRefresh => Launcher.Config.Downloader.RefreshTime;
 
-        private static SPTModsData? _sptModData;
-        public static Action<SPTModsData>? SPTModDataQueried;
+        private static SPTModsJson? _sptModsJson; // This is now outdated and should not be used
+        public static Action<SPTModsJson>? SPTModsJsonQueried;
+        
+        public static Action<SPTModListPage>? SPTModListQueried;
         public static int TotalCachedMods { get; private set; }
 
         #region Downloader
-        private static Dictionary<int, ModDownload> _currentDownloads = new(); // Id, ModDownload (maybe I should just iterate through them all instead of having a dictionary)
-
-        public static async void ScheduleDownloadAsync(int modId)
-        {
-            try
-            {
-                _currentDownloads ??= new Dictionary<int, ModDownload>();
-                ModDownload? download = await DownloadAsync(modId);
-                if (download == null) return;
-                if (_currentDownloads.TryAdd(modId, download.Value))
-                {
-                    Logger.Info($"Scheduled download of {download.Value.Name} ({download.Value.Version})");
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Warn("Failed to Schedule Mod Download"); // TODO: add this to lang file
-            }
-        }
+        private static Dictionary<int, ModDownload> _currentDownloads = new(); // Id, ModDownload (maybe I should iterate through a List instead of a dictionary)
         
         #region Queries
         // Queries the basic mods.json list which is super light
         private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
-        private static async Task<SPTModsData?> QuerySPTModsJson()
+        private static async Task<SPTModsJson?> QuerySPTModsJson()
         {
             try
             {
@@ -208,7 +261,7 @@ namespace HOLE.Assets.Scripts.Mods
                 string json = await client.GetStringAsync(SPTModsJsonUrl);
                 // Cache mods.json so we don't need to download it each time
                 await File.WriteAllTextAsync(Launcher.ModsJsonPath, json);
-                return JsonSerializer.Deserialize<SPTModsData>(json, SerializerOptions);
+                return JsonSerializer.Deserialize<SPTModsJson>(json, SerializerOptions);
             }
             catch (HttpRequestException ex)
             {
@@ -222,7 +275,7 @@ namespace HOLE.Assets.Scripts.Mods
         }
         
         // Goes through the main SPT page like a normal user
-        public static async Task<bool> QuerySPTModList(int pageNumber = 0, SortBy sortField = SortBy.Relevance, SortOrder sortOrder = SortOrder.DESC) 
+        public static async Task<SPTModListPage?> QuerySPTModList(int pageNumber = 0, SortBy sortField = SortBy.Relevance, SortOrder sortOrder = SortOrder.DESC) 
         {
             string formattedUrl = $"{SPTModListBaseUrl}?pageNo={pageNumber}&sortField={sortField}&sortOrder={sortOrder}";
             HttpClient client = new();
@@ -231,24 +284,28 @@ namespace HOLE.Assets.Scripts.Mods
             string responseContent = await response.Content.ReadAsStringAsync();
             HtmlDocument document = new();
             document.LoadHtml(responseContent);
-            File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "test.html"), responseContent);
-            List<SPTMod>? modList = await GetModButtons(document);
-            if (modList == null)
-            {
-                Logger.Warn("Failed to get mod list.");
-                return false;
-            }
-            else
-            {
-                foreach (var mod in modList)
-                {
-                    Logger.Info(mod.ToString());
-                }
-            }
-            return true;
+            //File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "test.html"), responseContent);
+            SPTModListPage? modListPage = await ScrapeModListPage(document, pageNumber);
+            //SPTModListQueried?.Invoke(modListPage.Value);
+            return modListPage ?? null;
         }
 
-        private static async Task<List<SPTMod>?> GetModButtons(HtmlDocument document)
+        private static async Task<SPTModListPage?> ScrapeModListPage(HtmlDocument document, int pageNumber)
+        {
+            List<SPTMod>? modList = await ScrapeModButtons(document);
+            if (modList == null) 
+                return null;
+            
+            SPTModListPage modListPage = new()
+            {
+                PageNumber = pageNumber,
+                Mods = modList,
+                TimeCached = DateTime.Now,
+            };
+            return modListPage;
+        }
+
+        private static async Task<List<SPTMod>?> ScrapeModButtons(HtmlDocument document)
         {
             HtmlNodeCollection? modElements = document.DocumentNode.SelectNodes("//div[contains(@class, 'filebaseFileCard')]");
             if (modElements == null)
@@ -334,7 +391,7 @@ namespace HOLE.Assets.Scripts.Mods
         
         private static async Task<ModDownload?> DownloadAsync(int modId)
         {
-            HttpClient client = new HttpClient();
+            using HttpClient client = new HttpClient();
             HttpResponseMessage? response = await QuerySPTModPage(client, modId);
             if (response == null) 
                 return null;
@@ -342,7 +399,7 @@ namespace HOLE.Assets.Scripts.Mods
             string responseContent = await response.Content.ReadAsStringAsync();
             HtmlDocument document = new();
             document.LoadHtml(responseContent);
-            HtmlNode? downloadButton = await GetDownloadButton(document);
+            HtmlNode? downloadButton = GetDownloadButton(document);
             if (downloadButton == null) 
                 return null;
             
@@ -350,12 +407,10 @@ namespace HOLE.Assets.Scripts.Mods
             string versionId = versionUrl.Split('/').Last();
             Match tokenMatch = Regex.Match(responseContent, Pattern);
             string? token = tokenMatch.Success ? tokenMatch.Groups[1].Value : null;
-            if (token == null)
-            {
-                Logger.Warn("Failed to find token.");
-                return null;
-            }
-            return await QueryDownloadAsync(client, versionUrl, versionId, token);
+            if (token != null) 
+                return await QueryDownloadAsync(client, versionUrl, versionId, token);
+            Logger.Warn("Failed to find token.");
+            return null;
         }
 
         private static async Task<bool> ScheduleDownload(ModDownload mod, Stream contentStream, byte[] buffer)
@@ -410,29 +465,81 @@ namespace HOLE.Assets.Scripts.Mods
             string responseContent = await response.Content.ReadAsStringAsync();
             
             // Possible Direct File from SPT redirect
-            ModDownload? modDownload = await GetFileFromResponseAsync(response);
+            ModDownload? modDownload = GetFileFromResponse(response);
             if (modDownload != null)
                 return modDownload;
             
             HtmlDocument document = new();
             document.LoadHtml(responseContent);
-            string? downloadUrl = await GetDownloadLink(document);
+            string? downloadUrl = GetDownloadLink(document);
             if(downloadUrl != null) FormatUrl(ref downloadUrl);
 
             response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
             // Possible Direct File from Download Page
             Logger.Info($"modDownload {modDownload != null}");
             //modDownload.stream = GetContentStream(response);
-            modDownload ??= await GetFileFromResponseAsync(response);
+            modDownload ??= GetFileFromResponse(response);
             if (modDownload != null)
                 await ScheduleDownload(modDownload.Value, await response.Content.ReadAsStreamAsync(), new byte[DownloadBufferSize]);
             return modDownload;
         }
         #endregion
-        
-        public static async Task<SPTModsData> GetSPTModDataAsync(bool forceQuery = false)
+
+        private static bool LocalModListExists() => File.Exists(Launcher.Config.Paths.ModList);
+        public static async Task<SPTModList?> GetSPTModList()
         {
-            if(forceQuery) _sptModData = null;
+            if (!LocalModListExists())
+                return await CreateLocalModList();
+            
+            string modListJson = await File.ReadAllTextAsync(Launcher.Config.Paths.ModList);
+            return JsonSerializer.Deserialize<SPTModList>(modListJson);
+        }
+
+        private static async Task<SPTModList> CreateLocalModList()
+        {
+            int[] pages = new int[Launcher.Config.Downloader.DefaultPagesQueried];
+            for (int i = 0; i < Launcher.Config.Downloader.DefaultPagesQueried; i++)
+            {
+                pages[i] = i;
+            }
+            return await CreateLocalModList(pages);
+        }
+        private static async Task<SPTModList> CreateLocalModList(params int[] pages)
+        {
+            SPTModList modList = new();
+            foreach (int pageNumber in pages)
+            {
+                SPTModListPage? modListPage = await QuerySPTModList(pageNumber);
+                if (modListPage == null) 
+                    continue;
+                
+                modList.Pages ??= new List<SPTModListPage>();
+                modList.Pages.Add(modListPage.Value);
+            }
+            return modList;
+        }
+        
+        public static async void ScheduleDownloadAsync(int modId)
+        {
+            try
+            {
+                _currentDownloads ??= new Dictionary<int, ModDownload>();
+                ModDownload? download = await DownloadAsync(modId);
+                if (download == null) return;
+                if (_currentDownloads.TryAdd(modId, download.Value))
+                {
+                    Logger.Info($"Scheduled download of {download.Value.Name} ({download.Value.Version})");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warn("Failed to Schedule Mod Download"); // TODO: add this to lang file
+            }
+        }
+        
+        public static async Task<SPTModsJson> GetSPTModsJsonAsync(bool forceQuery = false) //Don't use it's not updated anymore
+        {
+            if(forceQuery) _sptModsJson = null;
             else if(File.Exists(Launcher.ModsJsonPath))
             {
                 DateTime lastWrite = File.GetLastWriteTime(Launcher.ModsJsonPath);
@@ -440,12 +547,12 @@ namespace HOLE.Assets.Scripts.Mods
                 if (span.TotalSeconds < ModCacheRefresh)
                 {
                     string modsJson = await File.ReadAllTextAsync(Launcher.ModsJsonPath);
-                    _sptModData = JsonSerializer.Deserialize<SPTModsData>(modsJson);
+                    _sptModsJson = JsonSerializer.Deserialize<SPTModsJson>(modsJson);
                 }
             }
-            _sptModData ??= await QuerySPTModsJson();
-            SPTModDataQueried?.Invoke((SPTModsData)_sptModData!);
-            return (SPTModsData)_sptModData!;
+            _sptModsJson ??= await QuerySPTModsJson();
+            SPTModsJsonQueried?.Invoke((SPTModsJson)_sptModsJson!);
+            return (SPTModsJson)_sptModsJson!;
         }
         
         private static void FormatUrl(ref string url) // Changes URL to known ways of direct downloading
@@ -484,14 +591,14 @@ namespace HOLE.Assets.Scripts.Mods
             return origin;
         }
 
-        private static async Task<ModDownload?> GetFileFromResponseAsync(HttpResponseMessage response)
+        private static ModDownload? GetFileFromResponse(HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode) 
                 return null;
-            if (!await HasDirectFileFromResponse(response)) 
+            if (!HasDirectFileFromResponse(response)) 
                 return null;
             
-            string? fileName = await GetFileNameFromResponse(response);
+            string? fileName = GetFileNameFromResponse(response);
             if (fileName == null) 
                 return null;
             
@@ -513,14 +620,14 @@ namespace HOLE.Assets.Scripts.Mods
             
             return modDownload;
         }
-        private static Task<string?> GetFileNameFromResponse(HttpResponseMessage response) 
-            => Task.FromResult(response.Content.Headers.ContentDisposition?.FileName ?? null);
-        private static Task<HtmlNode?> GetDownloadButton(HtmlDocument document)
-            => Task.FromResult(document.DocumentNode.SelectSingleNode("//a[@class='button buttonPrimary externalURL']"));
-        private static Task<string?> GetDownloadLink(HtmlDocument document) => 
-            Task.FromResult(document.DocumentNode.SelectSingleNode("//a[starts-with(@class, 'button buttonPrimary')]")?.Attributes["href"].Value);
-        private static Task<bool> HasDirectFileFromResponse(HttpResponseMessage response) => 
-            Task.FromResult(response.Content.Headers.ContentDisposition != null);
+        private static string? GetFileNameFromResponse(HttpResponseMessage response) 
+            => response.Content.Headers.ContentDisposition?.FileName ?? null;
+        private static HtmlNode? GetDownloadButton(HtmlDocument document)
+            => document.DocumentNode.SelectSingleNode("//a[@class='button buttonPrimary externalURL']");
+        private static string? GetDownloadLink(HtmlDocument document) 
+            => document.DocumentNode.SelectSingleNode("//a[starts-with(@class, 'button buttonPrimary')]")?.Attributes["href"].Value;
+        private static bool HasDirectFileFromResponse(HttpResponseMessage response) 
+            => response.Content.Headers.ContentDisposition != null;
         #endregion
         
         #region Extractor
@@ -599,7 +706,9 @@ namespace HOLE.Assets.Scripts.Mods
                     else if (isDll)
                     {
                         destinationPath = Path.Combine(Launcher.Config.Paths.Mods, modFileName, "BepInEx", "plugins");
-                        FileManagement.DirectoryCheck(destinationPath);
+                        if(!FileManagement.DirectoryCheck(destinationPath)) 
+                            return false;
+                        
                         entry.WriteToDirectory(destinationPath, new ExtractionOptions()
                         {
                             Overwrite = true,
@@ -611,25 +720,32 @@ namespace HOLE.Assets.Scripts.Mods
                 }
             } catch (Exception e)
             {
-                Logger.Warn($"Failed to Install ZIP Mod.\n{e.Message}");
+                Logger.Warn($"Failed to Extract archive to {destinationPath}.\n{e.Message}");
             }
             return await Task.FromResult(false);
         }
         #endregion
         
         #region Installer
-        private static async Task<bool> InstallDllModAsync(string localModFile, Instance instance, bool createJunction = true)
+        public static async Task<bool> InstallModAsync(string localModFile, bool createJunction = true)
         {
+            string destinationPath = Launcher.Config.Paths.Icons;
+            Logger.Info($"Destination: {destinationPath}");
             try
             {
                 if (createJunction)
                 {
-                    FileManagement.CreateJunction(localModFile, instance.BepInExPath);
+                    FileManagement.CreateJunction(localModFile, destinationPath);
+                }
+                else
+                {
+                    File.Copy(localModFile, destinationPath, true);
+                    return true;
                 }
             }
             catch (Exception e)
             {
-                Logger.Warn($"Failed to Install DLL Mod.\n{e.Message}");
+                Logger.Warn($"Failed To Install Mod.\n'{e.Message}'");
             }
             return await Task.FromResult(false);
         }
@@ -642,6 +758,41 @@ namespace HOLE.Assets.Scripts.Mods
             return await Task.FromResult(false);
         }
         #endregion
+
+        private static Dictionary<string, ModDownloaderForm> downloaders = new(); // Instance name, downloader form
+        public static void Open(Instance? instance)
+        {
+            if (instance == null) return; // open downloader with no instance selected
+
+            if (downloaders.TryGetValue(instance.Name, out var downloader))
+            {
+                if (downloader.IsDisposed)
+                {
+                    downloader = null;
+                    downloaders.Remove(instance.Name);
+                }
+            }
+
+            if (downloader == null)
+            {
+                downloader = new ModDownloaderForm(instance);
+                downloaders[instance.Name] = downloader;
+            }
+
+            downloader.Show();
+        }
+        
+        public static List<LocalMod> GetLocalMods()
+        {
+            List<LocalMod> localMods = new();
+            foreach (string modDirectory in Directory.GetDirectories(Launcher.Config.Paths.Mods))
+            {
+                LocalMod localMod = new(modDirectory);
+                if(localMod.IsValid())
+                    localMods.Add(localMod);
+            }
+            return localMods;
+        }
 
         private static bool IsAllowedFileType(string extension) 
             => AllowedFileTypes.Contains(extension);

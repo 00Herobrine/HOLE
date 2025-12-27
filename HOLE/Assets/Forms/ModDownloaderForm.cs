@@ -5,30 +5,36 @@ namespace HOLE.Assets.Forms
 {
     public partial class ModDownloaderForm : Form
     {
-        Instance _instance;
+        private readonly Instance _instance;
 
         public ModDownloaderForm(Instance instance)
         {
             InitializeComponent();
             _instance = instance;
-            Text = $"{Text} - {instance.Name}";
         }
 
         private void ModDownloaderForm_Load(object sender, EventArgs e)
         {
             SubscribeToEvents();
-            _ = ModManager.QuerySPTModList();
+            Text = $@"{Text} - {_instance.Name}";
+            GetModList();
+            //_ = ModManager.QuerySPTModList();
             //_ = ModManager.GetSPTModDataAsync();
         }
-
+        
         private void SubscribeToEvents()
         {
-            ModManager.SPTModDataQueried += ModsQueried;
+            ModManager.SPTModsJsonQueried += ModsQueried;
         }
 
-        private void ModsQueried(SPTModsData modDataData)
+        private void GetModList()
         {
-            UpdateModList(modDataData.mod_data);
+            _ = ModManager.GetSPTModList();
+        }
+
+        private void ModsQueried(SPTModsJson modJsonJson)
+        {
+            UpdateModList(modJsonJson.mod_data);
         }
 
         private void SearchButton_Click(object sender, EventArgs e)
@@ -36,7 +42,7 @@ namespace HOLE.Assets.Forms
             UpdateWithFilters();
         }
 
-        private void UpdateWithFilters() => UpdateWithFiltersAsync(ModManager.GetSPTModDataAsync().Result.mod_data);
+        private void UpdateWithFilters() => UpdateWithFiltersAsync(ModManager.GetSPTModsJsonAsync().Result.mod_data);
         private async void UpdateWithFiltersAsync(SPTModData[] modData)
         {
             modsView.Items.Clear();

@@ -18,8 +18,11 @@ namespace HOLE.Assets.Scripts.Utils
 
         public static bool CreateJunction(string sourcePath, string targetPath) // symlink without the admin privileges
         {
-            if (!File.Exists(sourcePath)) 
+            if (!Directory.Exists(sourcePath))
+            {
+                Logger.Warn($"Source directory '{sourcePath}' does not exist.");
                 return false;
+            }
             
             string fullFileName = Path.GetFileName(sourcePath);
             string shortFileName = Path.GetFileNameWithoutExtension(sourcePath);
@@ -40,6 +43,7 @@ namespace HOLE.Assets.Scripts.Utils
                 process.StartInfo.CreateNoWindow = true;
                 process.Start();
 
+                Logger.Info($"Junction create attempt {sourcePath} -> {Path.Combine(targetPath, shortFileName)}");
                 StreamWriter sw = process.StandardInput;
                 if (sw.BaseStream.CanWrite)
                 {

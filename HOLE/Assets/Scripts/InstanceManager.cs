@@ -1,90 +1,134 @@
 ﻿using System.Diagnostics;
+using System.Text.Json;
 using HOLE.Assets.Scripts.Utils;
 
 namespace HOLE.Assets.Scripts
 {
-    public class Instance
+    public class Instance(string folder)
     {
-        public readonly string Folder;
-        public readonly string Name;
-        public string BepInExPath => Path.Combine(Folder, "BepInEx");
-        public string PluginsPath => Path.Combine(BepInExPath, "plugins");
-        public string UserPath => Path.Combine(Folder, "user");
-        public string ServerExePath => Path.Combine(Folder, "spt.server.exe");
-        public string UserCachePath => Path.Combine(UserPath, "cache");
-        public string ModsPath => Path.Combine(UserPath, "mods");
-        public string ProfilesPath => Path.Combine(UserPath, "profiles");
+        public const string BepInExFolderName = "BepInEx";
+        public const string PluginsFolderName = "plugins";
+        public const string UserFolderName = "user";
+        public const string CacheFolderName = "cache";
+        public const string ModsFolderName = "mods";
+        public const string ProfilesFolderName = "profiles";
+        public const string ConfigFileName = "config.json";
+        public const string ServerExeName = "spt.server.exe";
+        
+        public readonly string Folder = folder;
+        public readonly string Name = Path.GetDirectoryName(folder) ?? "INVALID DIRECTORY";
+        public InstanceConfig Config;
+        public readonly string BepInExPath = Path.Combine(folder, BepInExFolderName);
+        public readonly string PluginsPath = Path.Combine(folder, BepInExFolderName, PluginsFolderName);
+        public readonly string ServerExePath = Path.Combine(folder, ServerExeName);
+        public readonly string UserPath = Path.Combine(folder, UserFolderName);
+        public readonly string UserCachePath = Path.Combine(folder, UserFolderName, CacheFolderName);
+        public readonly string ModsPath = Path.Combine(folder, UserFolderName, ModsFolderName);
+        public readonly string ProfilesPath = Path.Combine(folder, UserFolderName, ProfilesFolderName);
+        public readonly string ConfigPath = Path.Combine(folder, ConfigFileName);
 
         public Process[] GameProcess { get; private set; } = [];
-        public Instance(string folder)
-        {
-            Folder = folder;
-            Name = Folder.Split(Path.DirectorySeparatorChar).Last();
-        }
+        public Process[] ServerProcess { get; private set; } = [];
         
+        public void LoadConfig()
+        {
+            try
+            {
+                if (File.Exists(ConfigPath))
+                {
+                    var json = File.ReadAllText(ConfigPath);
+                    Config = JsonSerializer.Deserialize<InstanceConfig?>(json) ?? new InstanceConfig();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"Failed to load config for instance '{Name}': {ex.Message}");
+                Config = new InstanceConfig();
+            }
+        }
+
+        public bool HasServerExe() => File.Exists(ServerExePath);
     }
+
+    public struct InstanceConfig(string icon = "wifi.png", string? group = null)
+    {
+        public string? Icon = icon;
+        public string? Group = group;
+    }
+    
     public static class InstanceManager
     {
         public static string InstancesFolder => Launcher.Config.Paths.Instances;
-        private static List<Instance> _instances = new();
+        //private static List<Instance> _instances = new();
         //public static InstanceFolder SelectedInstance { get; private set; }
         //public static Action? InstancesLoadedEvent;
         //public static Action? InstanceSelectedEvent;
 
-        public static async void LoadInstances()
+        /*public static async void LoadInstances()
         {
             _instances = await LoadInstancesFromDirectory();
-        }
-
-        private static async Task<List<Instance>> LoadInstancesFromDirectory()
-        {
-            FileManagement.DirectoryCheck(InstancesFolder);
-            List<Instance> instances = [];
-            foreach (var instanceFolder in Directory.GetDirectories(InstancesFolder))
-            {
-                Instance instance = new Instance(instanceFolder);
-                instances.Add(instance);
-            }
-            return await Task.FromResult(instances);
-        }
+        }*/
 
         public static List<Instance> GetInstances()
         {
-            return _instances;
+            List<Instance> instances = [];
+            if(!FileManagement.DirectoryCheck(InstancesFolder)) return instances;
+            foreach (var instanceFolder in Directory.GetDirectories(InstancesFolder))
+            {
+                Instance instance = new Instance(instanceFolder);
+                if (!instance.IsValid()) continue;
+                instance.LoadConfig();
+                instances.Add(instance);
+            }
+            return instances;
         }
 
         public static Instance? GetInstance(string instanceName)
         {
             string instanceDir = Path.Combine(InstancesFolder, instanceName);
             if (!Path.Exists(instanceDir))
-            {
-                // Instance doesn't exist
                 return null;
-            }
-            return new Instance(instanceDir);
+            Instance instance = new Instance(instanceDir);
+            return instance.IsValid() ? instance : null;
+        }
+
+        public static void AddInstance(string instancePath)
+        {
+            
         }
 
         public static void DeleteInstance(string instanceName)
         {
             string instanceDir = Path.Combine(InstancesFolder, instanceName);
             if (!Path.Exists(instanceDir))
-            {
-                // Couldn't find instance with that name
                 return;
+
+            try
+            {
+                Directory.Delete(instanceDir);
+            } catch (Exception e)
+            {
+                Logger.Warn($"Failed to delete instance '{instanceName}'.\n'{e.Message}'");
             }
-            Directory.Delete(instanceDir);
         }
 
         public static void RenameInstance(string instanceName, string updatedName)
         {
-            string oldDir = Path.Combine(InstancesFolder, instanceName);
-            string newDir = Path.Combine(InstancesFolder, updatedName);
-            Directory.Move(oldDir, newDir);
+            try
+            {
+                string oldDir = Path.Combine(InstancesFolder, instanceName);
+                string newDir = Path.Combine(InstancesFolder, updatedName);
+                Directory.Move(oldDir, newDir);
+            }
+            catch(Exception e)
+            {
+                Logger.Warn($"Failed to renamed instance '{instanceName}' to '{updatedName}'.\n'{e.Message}'");
+            }
         }
 
         public static bool IsValidInstance(string instanceName, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
         {
-            foreach (Instance instance in _instances)
+            foreach (Instance instance in GetInstances())
             {
                 if (!instance.Name.Equals(instanceName, comparisonType)) continue;
                 return IsValidInstance(instance);
@@ -95,6 +139,11 @@ namespace HOLE.Assets.Scripts
         {
             return Path.Exists(instance.BepInExPath)
                    && Path.Exists(instance.ServerExePath);
+        }
+
+        public static void SetGroup(Instance instance, string group)
+        {
+            instance.Config.Group = group;
         }
     }
 }

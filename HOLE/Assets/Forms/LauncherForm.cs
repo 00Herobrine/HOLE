@@ -1,10 +1,8 @@
 using System.Diagnostics;
+using System.Media;
 using HOLE.Assets.Scripts;
 using HOLE.Assets.Scripts.Mods;
 using HOLE.Assets.Scripts.Utils;
-using SPT.Launcher;
-using SPT.Launcher.Helpers;
-using SPT.Launcher.Models.SPT;
 
 namespace HOLE.Assets.Forms
 {
@@ -13,34 +11,52 @@ namespace HOLE.Assets.Forms
         public LauncherForm()
         {
             InitializeComponent();
+            Launcher.Initialize(); // Should only be Initialized once
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Launcher.Initialize(); // Should only be Initialized once
             SubscribeToEvents();
-            LoadInstanceIcons();
+            LoadElementLists();
             LoadInstances();
+            CheckSelectedInstance();
             //Task.Run(() => ConnectServer());
         }
 
-        private void LoadInstanceIcons()
+        ToolStripItem[] ServerElements, GameElements;
+        private void LoadElementLists()
         {
-            IconManager.GetInstanceIcons();
+            ServerElements = [StartServerButton, ServerSectionSeparator];
+            GameElements = [StartGameButton, EditButton, ShortcutButton, DeleteButton];
         }
 
-        private async void LoadInstances()
+        private void LoadInstances()
         {
-            InstanceManager.LoadInstances();
+            InitializeImageList();
+
             List<Instance> instances = InstanceManager.GetInstances();
-            InstancesView.Items.Clear();
             foreach (Instance instance in instances)
             {
-                InstancesView.Items.Add(instance.Name, 0);
+                Debug.WriteLine($"Icon: {instance.Config.Icon}");
+                InstancesView.Items.Add(instance.Name, instance.Config.Icon);
             }
         }
 
-        public async Task ConnectServer()
+        private void InitializeImageList()
+        {
+            InstancesView.Items.Clear();
+            InstancesView.LargeImageList ??= new ImageList();
+            InstancesView.LargeImageList.Images.Clear();
+            foreach (string imagePath in IconManager.GetInstanceIconPaths())
+            {
+                string imageName = Path.GetFileName(imagePath);
+                Image image = Image.FromFile(imagePath);
+                Debug.WriteLine($"{imageName}");
+                InstancesView.LargeImageList.Images.Add(imageName, image);
+            }
+        }
+
+        /*public async Task ConnectToServer()
         {
             LauncherSettingsProvider.Instance.AllowSettings = false;
 
@@ -60,7 +76,7 @@ namespace HOLE.Assets.Forms
             }
 
             LauncherSettingsProvider.Instance.AllowSettings = true;
-        }
+        }*/
 
         private void SubscribeToEvents()
         {
@@ -82,37 +98,18 @@ namespace HOLE.Assets.Forms
 
         }
 
-        private Dictionary<string, ModDownloaderForm> downloaders = new(); // Instance name, downloader form
-        private void downloadModsButton_Click(object sender, EventArgs e)
+
+        private void DownloadModsButton_Click(object sender, EventArgs e)
         {
-            // No Instance Selected Maybe open the downloader that saves directly to cache and doesn't install
-            if (InstancesView.SelectedItems.Count <= 0)
-                return;
-
-            var selectedItem = InstancesView.SelectedItems[0];
-            if (selectedItem == null) return;
-            Instance? selectedInstance = InstanceManager.GetInstance(selectedItem.Text);
-            if (selectedInstance == null) return;
-            LaunchDownloader(selectedInstance);
-        }
-
-        private void LaunchDownloader(Instance instance)
-        {
-            if (downloaders.TryGetValue(instance.Name, out var downloader))
-            { // Downloader for instance already launched
-                if (downloader.IsDisposed) // Check if the Downloader was closed
-                {
-                    downloader = null;
-                    downloaders.Remove(instance.Name);
-                }
-            }
-
-            if (downloader == null)
+            // If no Instance selected maybe open ModDownloader that saves directly to cache and doesn't install to an instance
+            Instance? selectedInstance = GetSelectedInstance();
+            if (selectedInstance == null)
             {
-                downloader = new ModDownloaderForm(instance);
-                downloaders[instance.Name] = downloader;
+                Logger.Info("Selected Instance == null");
+                return;
             }
-            downloader.Show();
+
+            ModManager.Open(selectedInstance);
         }
 
         private void FolderButton_Click(object sender, EventArgs e)
@@ -128,13 +125,27 @@ namespace HOLE.Assets.Forms
             return InstanceManager.GetInstance(InstancesView.SelectedItems[0].Text);
         }
 
+        private Form? newInstanceForm;
+
+        private void OpenNewInstanceForm()
+        {
+            if (newInstanceForm == null || newInstanceForm.IsDisposed)
+            {
+                newInstanceForm = new NewInstanceForm();
+                //newInstanceForm.ShowDialog();
+            }
+            else
+            {
+                // Play Windows Audio
+                SystemSounds.Asterisk.Play();
+            }
+
+            newInstanceForm.Show();
+            newInstanceForm.BringToFront();
+        }
         private void AddInstanceButton_Click(object sender, EventArgs e)
         {
-            FileManagement.DirectoryCheck(Launcher.Config.Paths.ModDownloads);
-            foreach (var file in Directory.GetFiles(Launcher.Config.Paths.ModDownloads))
-            {
-                _ = ModManager.ExtractModAsync(file);
-            }
+            OpenNewInstanceForm();
         }
 
         private void FikaWikiButton_Click(object sender, EventArgs e)
@@ -190,6 +201,58 @@ namespace HOLE.Assets.Forms
         private void SettingsButton_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void InstanceIcon_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void InstancesView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CheckSelectedInstance();
+        }
+
+        private void CheckSelectedInstance()
+        {
+            Instance? instance = GetSelectedInstance();
+            if (instance == null)
+            {
+                DisableElements(GameElements);
+            }
+            else
+            {
+                EnableElements(GameElements);
+                if (!instance.HasServerExe()) DisableElements(ServerElements);
+            }
+        }
+
+        private void EnableElements(params ToolStripItem[] toolStripItems)
+        {
+            foreach (ToolStripItem toolStripItem in toolStripItems)
+            {
+                toolStripItem.Enabled = true;
+            }
+        }
+
+        private void DisableElements(params ToolStripItem[] toolStripItems)
+        {
+            foreach (ToolStripItem toolStripItem in toolStripItems)
+            {
+                toolStripItem.Enabled = false;
+            }
+        }
+
+        private void GroupBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                // set selected instance's group to text
+                Instance? instance = GetSelectedInstance();
+                if (instance == null) return;
+                InstanceManager.SetGroup(instance, GroupBox.Text);
+            }
         }
     }
 }

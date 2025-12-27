@@ -39,10 +39,11 @@
             InstanceIcon = new ToolStripButton();
             InstanceName = new ToolStripButton();
             GroupBox = new ToolStripComboBox();
-            toolStripSeparator2 = new ToolStripSeparator();
-            LaunchButton = new ToolStripButton();
-            KillButton = new ToolStripButton();
             toolStripSeparator3 = new ToolStripSeparator();
+            StartGameButton = new ToolStripButton();
+            ServerSectionSeparator = new ToolStripSeparator();
+            StartServerButton = new ToolStripButton();
+            toolStripSeparator2 = new ToolStripSeparator();
             FolderButton = new ToolStripButton();
             EditButton = new ToolStripButton();
             ShortcutButton = new ToolStripButton();
@@ -52,8 +53,12 @@
             toolStrip = new ToolStrip();
             AddInstanceButton = new ToolStripButton();
             AddFikaButton = new ToolStripDropDownButton();
+            FikaWikiButton = new ToolStripMenuItem();
+            toolStripSeparator6 = new ToolStripSeparator();
             AddFikaClientButton = new ToolStripMenuItem();
             AddFikaServerButton = new ToolStripMenuItem();
+            toolStripSeparator8 = new ToolStripSeparator();
+            AddFikaHeadlessButton = new ToolStripMenuItem();
             FoldersButton = new ToolStripDropDownButton();
             FoldersLauncherButton = new ToolStripMenuItem();
             FoldersInstancesButton = new ToolStripMenuItem();
@@ -68,8 +73,6 @@
             UpdateButton = new ToolStripButton();
             CatButton = new ToolStripButton();
             ProfileButton = new ToolStripDropDownButton();
-            FikaWikiButton = new ToolStripMenuItem();
-            toolStripSeparator6 = new ToolStripSeparator();
             toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.RightToolStripPanel.SuspendLayout();
@@ -90,7 +93,7 @@
             // toolStripContainer1.ContentPanel
             // 
             toolStripContainer1.ContentPanel.Controls.Add(InstancesView);
-            toolStripContainer1.ContentPanel.Size = new Size(680, 404);
+            toolStripContainer1.ContentPanel.Size = new Size(681, 404);
             toolStripContainer1.Dock = DockStyle.Fill;
             toolStripContainer1.Location = new Point(0, 0);
             toolStripContainer1.Name = "toolStripContainer1";
@@ -141,25 +144,25 @@
             InstancesView.MultiSelect = false;
             InstancesView.Name = "InstancesView";
             InstancesView.RightToLeft = RightToLeft.No;
-            InstancesView.Size = new Size(680, 404);
+            InstancesView.Size = new Size(681, 404);
             InstancesView.TabIndex = 0;
             InstancesView.TileSize = new Size(200, 100);
             InstancesView.UseCompatibleStateImageBehavior = false;
-            InstancesView.View = View.SmallIcon;
             InstancesView.AfterLabelEdit += InstancesView_AfterLabelEdit;
+            InstancesView.SelectedIndexChanged += InstancesView_SelectedIndexChanged;
             // 
             // InstanceStrip
             // 
             InstanceStrip.AllowItemReorder = true;
             InstanceStrip.Dock = DockStyle.None;
             InstanceStrip.GripStyle = ToolStripGripStyle.Hidden;
-            InstanceStrip.Items.AddRange(new ToolStripItem[] { InstanceIcon, InstanceName, GroupBox, toolStripSeparator2, LaunchButton, KillButton, toolStripSeparator3, FolderButton, EditButton, ShortcutButton, DownloadModsButton, toolStripSeparator1, DeleteButton });
+            InstanceStrip.Items.AddRange(new ToolStripItem[] { InstanceIcon, InstanceName, GroupBox, toolStripSeparator3, StartGameButton, ServerSectionSeparator, StartServerButton, toolStripSeparator2, EditButton, ShortcutButton, FolderButton, DownloadModsButton, toolStripSeparator1, DeleteButton });
             InstanceStrip.Location = new Point(0, 0);
             InstanceStrip.Name = "InstanceStrip";
             InstanceStrip.Padding = new Padding(0);
             InstanceStrip.RenderMode = ToolStripRenderMode.System;
             InstanceStrip.RightToLeft = RightToLeft.No;
-            InstanceStrip.Size = new Size(120, 404);
+            InstanceStrip.Size = new Size(119, 404);
             InstanceStrip.Stretch = true;
             InstanceStrip.TabIndex = 1;
             InstanceStrip.Text = "toolStrip2";
@@ -174,6 +177,7 @@
             InstanceIcon.Name = "InstanceIcon";
             InstanceIcon.Size = new Size(119, 119);
             InstanceIcon.Text = "InstanceIcon";
+            InstanceIcon.Click += InstanceIcon_Click;
             // 
             // InstanceName
             // 
@@ -181,43 +185,49 @@
             InstanceName.Image = (Image)resources.GetObject("InstanceName.Image");
             InstanceName.ImageTransparentColor = Color.Magenta;
             InstanceName.Name = "InstanceName";
-            InstanceName.Size = new Size(119, 19);
+            InstanceName.Size = new Size(118, 19);
             InstanceName.Text = "Instance Name";
             // 
             // GroupBox
             // 
             GroupBox.Name = "GroupBox";
-            GroupBox.Size = new Size(117, 23);
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(119, 6);
-            // 
-            // LaunchButton
-            // 
-            LaunchButton.Image = (Image)resources.GetObject("LaunchButton.Image");
-            LaunchButton.ImageAlign = ContentAlignment.MiddleLeft;
-            LaunchButton.ImageTransparentColor = Color.Magenta;
-            LaunchButton.Name = "LaunchButton";
-            LaunchButton.Size = new Size(119, 20);
-            LaunchButton.Text = "Launch";
-            LaunchButton.TextAlign = ContentAlignment.MiddleLeft;
-            // 
-            // KillButton
-            // 
-            KillButton.Image = (Image)resources.GetObject("KillButton.Image");
-            KillButton.ImageAlign = ContentAlignment.MiddleLeft;
-            KillButton.ImageTransparentColor = Color.Magenta;
-            KillButton.Name = "KillButton";
-            KillButton.Size = new Size(119, 20);
-            KillButton.Text = "Kill";
-            KillButton.TextAlign = ContentAlignment.MiddleLeft;
+            GroupBox.Size = new Size(116, 23);
+            GroupBox.KeyDown += GroupBox_KeyDown;
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new Size(119, 6);
+            toolStripSeparator3.Size = new Size(118, 6);
+            // 
+            // StartGameButton
+            // 
+            StartGameButton.Image = (Image)resources.GetObject("StartGameButton.Image");
+            StartGameButton.ImageAlign = ContentAlignment.MiddleLeft;
+            StartGameButton.ImageTransparentColor = Color.Magenta;
+            StartGameButton.Name = "StartGameButton";
+            StartGameButton.Size = new Size(118, 20);
+            StartGameButton.Text = "Play";
+            StartGameButton.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // ServerSectionSeparator
+            // 
+            ServerSectionSeparator.Name = "ServerSectionSeparator";
+            ServerSectionSeparator.Size = new Size(118, 6);
+            // 
+            // StartServerButton
+            // 
+            StartServerButton.Image = (Image)resources.GetObject("StartServerButton.Image");
+            StartServerButton.ImageAlign = ContentAlignment.MiddleLeft;
+            StartServerButton.ImageTransparentColor = Color.Magenta;
+            StartServerButton.Name = "StartServerButton";
+            StartServerButton.Size = new Size(118, 20);
+            StartServerButton.Text = "Start Server";
+            StartServerButton.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(118, 6);
             // 
             // FolderButton
             // 
@@ -225,7 +235,7 @@
             FolderButton.ImageAlign = ContentAlignment.MiddleLeft;
             FolderButton.ImageTransparentColor = Color.Magenta;
             FolderButton.Name = "FolderButton";
-            FolderButton.Size = new Size(119, 20);
+            FolderButton.Size = new Size(118, 20);
             FolderButton.Text = "Folder";
             FolderButton.TextAlign = ContentAlignment.MiddleLeft;
             FolderButton.Click += FolderButton_Click;
@@ -236,7 +246,7 @@
             EditButton.ImageAlign = ContentAlignment.MiddleLeft;
             EditButton.ImageTransparentColor = Color.Magenta;
             EditButton.Name = "EditButton";
-            EditButton.Size = new Size(119, 20);
+            EditButton.Size = new Size(118, 20);
             EditButton.Text = "Edit";
             EditButton.TextAlign = ContentAlignment.MiddleLeft;
             // 
@@ -246,7 +256,7 @@
             ShortcutButton.ImageAlign = ContentAlignment.MiddleLeft;
             ShortcutButton.ImageTransparentColor = Color.Magenta;
             ShortcutButton.Name = "ShortcutButton";
-            ShortcutButton.Size = new Size(119, 20);
+            ShortcutButton.Size = new Size(118, 20);
             ShortcutButton.Text = "Create Shortcut";
             ShortcutButton.TextAlign = ContentAlignment.MiddleLeft;
             // 
@@ -255,14 +265,14 @@
             DownloadModsButton.Image = (Image)resources.GetObject("DownloadModsButton.Image");
             DownloadModsButton.ImageTransparentColor = Color.Magenta;
             DownloadModsButton.Name = "DownloadModsButton";
-            DownloadModsButton.Size = new Size(119, 20);
+            DownloadModsButton.Size = new Size(118, 20);
             DownloadModsButton.Text = "Download Mods";
-            DownloadModsButton.Click += downloadModsButton_Click;
+            DownloadModsButton.Click += DownloadModsButton_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(119, 6);
+            toolStripSeparator1.Size = new Size(118, 6);
             // 
             // DeleteButton
             // 
@@ -270,7 +280,7 @@
             DeleteButton.ImageAlign = ContentAlignment.MiddleLeft;
             DeleteButton.ImageTransparentColor = Color.Magenta;
             DeleteButton.Name = "DeleteButton";
-            DeleteButton.Size = new Size(119, 20);
+            DeleteButton.Size = new Size(118, 20);
             DeleteButton.Text = "Delete";
             DeleteButton.TextAlign = ContentAlignment.MiddleLeft;
             // 
@@ -297,26 +307,49 @@
             // 
             // AddFikaButton
             // 
-            AddFikaButton.DropDownItems.AddRange(new ToolStripItem[] { AddFikaClientButton, AddFikaServerButton, toolStripSeparator6, FikaWikiButton });
+            AddFikaButton.DropDownItems.AddRange(new ToolStripItem[] { FikaWikiButton, toolStripSeparator6, AddFikaClientButton, AddFikaServerButton, toolStripSeparator8, AddFikaHeadlessButton });
             AddFikaButton.Image = (Image)resources.GetObject("AddFikaButton.Image");
             AddFikaButton.ImageTransparentColor = Color.Magenta;
             AddFikaButton.Name = "AddFikaButton";
-            AddFikaButton.Size = new Size(85, 22);
-            AddFikaButton.Text = "Add FIKA";
+            AddFikaButton.Size = new Size(60, 22);
+            AddFikaButton.Text = "FIKA";
+            // 
+            // FikaWikiButton
+            // 
+            FikaWikiButton.Name = "FikaWikiButton";
+            FikaWikiButton.Size = new Size(121, 22);
+            FikaWikiButton.Text = "Wiki";
+            FikaWikiButton.Click += FikaWikiButton_Click;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(118, 6);
             // 
             // AddFikaClientButton
             // 
             AddFikaClientButton.Name = "AddFikaClientButton";
-            AddFikaClientButton.Size = new Size(180, 22);
+            AddFikaClientButton.Size = new Size(121, 22);
             AddFikaClientButton.Text = "Client";
             AddFikaClientButton.Click += AddFikaClientButton_Click;
             // 
             // AddFikaServerButton
             // 
             AddFikaServerButton.Name = "AddFikaServerButton";
-            AddFikaServerButton.Size = new Size(180, 22);
+            AddFikaServerButton.Size = new Size(121, 22);
             AddFikaServerButton.Text = "Server";
             AddFikaServerButton.Click += AddFikaServerButton_Click;
+            // 
+            // toolStripSeparator8
+            // 
+            toolStripSeparator8.Name = "toolStripSeparator8";
+            toolStripSeparator8.Size = new Size(118, 6);
+            // 
+            // AddFikaHeadlessButton
+            // 
+            AddFikaHeadlessButton.Name = "AddFikaHeadlessButton";
+            AddFikaHeadlessButton.Size = new Size(121, 22);
+            AddFikaHeadlessButton.Text = "Headless";
             // 
             // FoldersButton
             // 
@@ -422,18 +455,6 @@
             ProfileButton.Text = "Profile Name";
             ProfileButton.ToolTipText = " ";
             // 
-            // FikaWikiButton
-            // 
-            FikaWikiButton.Name = "FikaWikiButton";
-            FikaWikiButton.Size = new Size(180, 22);
-            FikaWikiButton.Text = "Wiki";
-            FikaWikiButton.Click += FikaWikiButton_Click;
-            // 
-            // toolStripSeparator6
-            // 
-            toolStripSeparator6.Name = "toolStripSeparator6";
-            toolStripSeparator6.Size = new Size(177, 6);
-            // 
             // LauncherForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -471,8 +492,7 @@
         private ToolStripButton CatButton;
         private ToolStripButton InstanceIcon;
         private ToolStripButton InstanceName;
-        private ToolStripButton LaunchButton;
-        private ToolStripButton KillButton;
+        private ToolStripButton StartGameButton;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripButton EditButton;
         private ToolStripButton DeleteButton;
@@ -500,5 +520,9 @@
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripSeparator toolStripSeparator6;
         private ToolStripMenuItem FikaWikiButton;
+        private ToolStripButton StartServerButton;
+        private ToolStripSeparator ServerSectionSeparator;
+        private ToolStripSeparator toolStripSeparator8;
+        private ToolStripMenuItem AddFikaHeadlessButton;
     }
 }

@@ -37,6 +37,8 @@
             searchBox = new TextBox();
             SearchButton = new Button();
             panel2 = new Panel();
+            FilterWebSearch = new CheckBox();
+            InfiniteScroll = new CheckBox();
             FilterDescription = new CheckBox();
             FilterName = new CheckBox();
             DownloadConfirmButton = new Button();
@@ -45,8 +47,6 @@
             DownloadSelectButton = new Button();
             selectedVersionBox = new ComboBox();
             comboBox1 = new ComboBox();
-            InfiniteScroll = new CheckBox();
-            FilterWebSearch = new CheckBox();
             tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -166,6 +166,26 @@
             panel2.Size = new Size(794, 54);
             panel2.TabIndex = 2;
             // 
+            // FilterWebSearch
+            // 
+            FilterWebSearch.AutoSize = true;
+            FilterWebSearch.Location = new Point(426, 28);
+            FilterWebSearch.Name = "FilterWebSearch";
+            FilterWebSearch.Size = new Size(88, 19);
+            FilterWebSearch.TabIndex = 9;
+            FilterWebSearch.Text = "Web Search";
+            FilterWebSearch.UseVisualStyleBackColor = true;
+            // 
+            // InfiniteScroll
+            // 
+            InfiniteScroll.AutoSize = true;
+            InfiniteScroll.Location = new Point(520, 28);
+            InfiniteScroll.Name = "InfiniteScroll";
+            InfiniteScroll.Size = new Size(97, 19);
+            InfiniteScroll.TabIndex = 8;
+            InfiniteScroll.Text = "Infinite-Scroll";
+            InfiniteScroll.UseVisualStyleBackColor = true;
+            // 
             // FilterDescription
             // 
             FilterDescription.AutoSize = true;
@@ -238,26 +258,6 @@
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new Size(132, 23);
             comboBox1.TabIndex = 0;
-            // 
-            // InfiniteScroll
-            // 
-            InfiniteScroll.AutoSize = true;
-            InfiniteScroll.Location = new Point(520, 28);
-            InfiniteScroll.Name = "InfiniteScroll";
-            InfiniteScroll.Size = new Size(97, 19);
-            InfiniteScroll.TabIndex = 8;
-            InfiniteScroll.Text = "Infinite-Scroll";
-            InfiniteScroll.UseVisualStyleBackColor = true;
-            // 
-            // FilterWebSearch
-            // 
-            FilterWebSearch.AutoSize = true;
-            FilterWebSearch.Location = new Point(426, 28);
-            FilterWebSearch.Name = "FilterWebSearch";
-            FilterWebSearch.Size = new Size(88, 19);
-            FilterWebSearch.TabIndex = 9;
-            FilterWebSearch.Text = "Web Search";
-            FilterWebSearch.UseVisualStyleBackColor = true;
             // 
             // ModDownloaderForm
             // 

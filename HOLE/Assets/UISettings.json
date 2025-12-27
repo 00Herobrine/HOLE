@@ -1,0 +1,11 @@
+{
+  "Launcher/AddInstanceButton": "Launcher/AddInstanceButton",
+  "Launcher/FoldersButton": "Launcher/FoldersButton",
+  "Launcher/SettingsButton": "Launcher/SettingsButton",
+  "Launcher/UpdateButton": "Launcher/UpdateButton",
+  "Launcher/CatButton": "Launcher/CatButton",
+  "Launcher/ProfileButton": "Launcher/ProfileButton",
+  "Launcher/LaunchButton": "Launcher/LaunchButton",
+  "Launcher/KillButton": "Launcher/KillButton",
+  "Launcher/GroupButton":  "Launcher/GroupButton"
+}

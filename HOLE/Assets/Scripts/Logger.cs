@@ -22,8 +22,12 @@ namespace HOLE.Assets.Scripts
         // [HOLE] [INFO] Successfully created LauncherConfig at '{location}'.
         // [HOLE] [WARN] Failed to create Instances folder '{location}'.
         public const string DefaultPrefix = "[HOLE]";
+        public const string DefaultLoggerFormat = "[{Prefix}] [{LogLevel}] {Message}";
         public static readonly LogPrefix DefaultLogPrefix = new LogPrefix(DefaultPrefix);
-        public static string Prefix => Launcher.Config.LogPrefix;
+        public static string Prefix => Launcher.Config.Logging.Prefix;
+
+        public static void Exception(Exception ex) 
+            => Log(DefaultLogPrefix, LogLevel.Error, ex.ToString());
 
         public static void Warn(params string[] args) 
             => Warn(DefaultLogPrefix, args);
@@ -40,12 +44,18 @@ namespace HOLE.Assets.Scripts
             prefix ??= DefaultLogPrefix;
             Log(prefix.Value, LogLevel.Info, args);
         }
-        public static void Log(LogPrefix prefix, LogLevel? logLevel = LogLevel.None, params string[] args)
+
+        private static void Log(LogPrefix prefix, LogLevel? logLevel = LogLevel.None, params string[] args)
         {
+            string logFormat = Launcher.Config.Logging.Format;
+            if (logLevel == LogLevel.None) logLevel = null;
             foreach(string arg in args)
             {
-                string logFormat = Launcher.Config.LogFormat;
-                string formattedMessage = logFormat.Replace("{Prefix}", prefix.Prefix).Replace("{Level}", logLevel.ToString()).Replace("{Message}", arg);
+                string formattedMessage = logFormat
+                    .Replace("{Prefix}", prefix.Prefix)
+                    .Replace("{LogLevel}", logLevel?.ToString() ?? "")
+                    .Replace("{Level}", logLevel?.ToString() ?? "")
+                    .Replace("{Message}", arg);
                 Debug.WriteLine(formattedMessage);
             }
         }
